@@ -1,0 +1,1021 @@
+{
+  "schemaVersion": "latiteam-tracking-v2",
+  "generatedAt": "2026-06-19T00:00:00+07:00",
+  "dataPolicy": "ข้อเท็จจริงจากเอกสารที่ผู้ใช้ส่ง ไม่รวมไฟล์ต้นฉบับหรือพาธส่วนตัว",
+  "projects": [
+    {
+      "id": "jmt",
+      "progress": 68,
+      "status": "active",
+      "name": "JMT Data Reporting & Prediction Model",
+      "company": "Data Cube Co., Ltd.",
+      "client": "บริษัท เจ เอ็ม ที เน็ทเวอร์ค เซอร์วิสเซ็ส จำกัด",
+      "desc": "โครงการวิเคราะห์ข้อมูลและโมเดลคาดการณ์ 5 งานหลัก ตามรายงาน RV.1 วันที่ 10 มิ.ย. และสถานะล่าสุดจากประชุมวันที่ 17 มิ.ย. 2026",
+      "manager": "คุณแอ๋ม",
+      "team": [
+        "คุณโน้ต",
+        "คุณแน็ท",
+        "คุณศักดิ์",
+        "คุณแอ๋ม"
+      ],
+      "startDate": "2026-06-01",
+      "deadline": "",
+      "value": 46000,
+      "monthlyRevenue": 46000,
+      "billingType": "monthly",
+      "cost": 0,
+      "costStatus": "ยังไม่ระบุ",
+      "wht": 3,
+      "whtStatus": "",
+      "paid": "รายได้รายเดือน 46,000 บาท เริ่ม 1/6/2026 หัก ณ ที่จ่าย 3%",
+      "progressSource": "ตัวเลขรายงานจริงจากเอกสาร RV.1 วันที่ 10/06/2026",
+      "sourceDocuments": [
+        {
+          "id": "jmt-source-rv1",
+          "name": "JMT Project Task Updates & Business Utilization 10.06.2026 RV.1.pdf",
+          "type": "PDF",
+          "sourceDate": "2026-06-10",
+          "originalPath": "JMT Project Task Updates & Business Utilization 10.06.2026 RV.1.pdf",
+          "driveUrl": ""
+        },
+        {
+          "id": "jmt-source-overview",
+          "name": "ภาพรวมโครงการ Update 08.06.2026.pdf",
+          "type": "PDF",
+          "sourceDate": "2026-06-08",
+          "originalPath": "ภาพรวมโครงการ Update 08.06.2026.pdf",
+          "driveUrl": ""
+        },
+        {
+          "id": "jmt-source-meeting-1706",
+          "name": "รายงานการประชุมความคืบหน้า17.06.2026.pdf",
+          "type": "PDF",
+          "sourceDate": "2026-06-17",
+          "originalPath": "รายงานการประชุมความคืบหน้า17.06.2026.pdf",
+          "driveUrl": ""
+        }
+      ],
+      "workstreams": [
+        {
+          "id": "jmt-rv1-judgment",
+          "title": "Judgment vs. Initial Debt Analysis",
+          "owner": "คุณศักดิ์",
+          "start": "2026-06-01",
+          "due": "2026-06-24",
+          "followUp": "2026-06-24",
+          "priority": "high",
+          "note": "RV.1 รายงาน Progress 50%; วิเคราะห์ 1,000,252 บัญชี และหลังประชุม 17 มิ.ย. พบยอด Just Balance / Just Credit / POD ผิดปกติที่ต้องยืนยันกับคุณโม",
+          "reportedProgress": 50,
+          "progress": 50,
+          "items": [
+            {
+              "id": "jmt-judgment-1",
+              "title": "Data Cleansing & EDA จำนวน 1,000,252 บัญชี",
+              "owner": "คุณศักดิ์",
+              "start": "",
+              "due": "2026-06-10",
+              "followUp": "2026-06-10",
+              "priority": "medium",
+              "note": "คำนวณอัตราส่วนยอดพิพากษาเทียบยอดหนี้ตั้งต้นและคัดกรองบัญชีผิดปกติ",
+              "progress": 100
+            },
+            {
+              "id": "jmt-judgment-2",
+              "title": "ยืนยัน Table/Column ของยอดพิพากษาผิดปกติ",
+              "owner": "คุณแน็ท",
+              "start": "",
+              "due": "2026-06-24",
+              "followUp": "2026-06-24",
+              "priority": "high",
+              "note": "สอบถามคุณโมเรื่อง Just Balance, Just Credit, POD รวมถึงจุดทศนิยมและเครื่องหมายคอมม่า",
+              "progress": 0
+            },
+            {
+              "id": "jmt-judgment-3",
+              "title": "พัฒนา Dashboard หลังยืนยัน Requirement",
+              "owner": "คุณศักดิ์",
+              "start": "",
+              "due": "2026-06-24",
+              "followUp": "2026-06-24",
+              "priority": "high",
+              "note": "จัดกลุ่มตาม Product และระดับความผิดปกติ; เอกสารระบุคาดแล้วเสร็จ 24/06/2026",
+              "progress": 0
+            },
+            {
+              "id": "jmt-judgment-4",
+              "title": "จัดทำ Summary Report และ User Manual",
+              "owner": "คุณศักดิ์",
+              "start": "",
+              "due": "2026-06-24",
+              "followUp": "2026-06-24",
+              "priority": "medium",
+              "note": "ดำเนินการควบคู่กับ Dashboard ตาม RV.1",
+              "progress": 0
+            }
+          ]
+        },
+        {
+          "id": "jmt-rv1-cheque",
+          "title": "Cheque Receipt Prediction",
+          "owner": "คุณแน็ท",
+          "start": "2026-06-01",
+          "due": "2026-06-24",
+          "followUp": "2026-06-24",
+          "priority": "high",
+          "note": "RV.1 รายงาน Progress 50%; ใช้ข้อมูลอดีต 570 เคส ทำนาย 840 เคส และส่ง Excel ให้ตรวจสอบตั้งแต่ 27/05/2026",
+          "reportedProgress": 50,
+          "progress": 50,
+          "items": [
+            {
+              "id": "jmt-cheque-1",
+              "title": "Data Cleansing & EDA ข้อมูลอดีต 570 เคส",
+              "owner": "คุณแน็ท",
+              "start": "",
+              "due": "2026-05-27",
+              "followUp": "2026-05-27",
+              "priority": "medium",
+              "note": "เตรียมฐานข้อมูลสำหรับ Model Training เสร็จแล้ว",
+              "progress": 100
+            },
+            {
+              "id": "jmt-cheque-2",
+              "title": "ตรวจผลทำนาย 840 เคสและข้อมูลวันที่รับเช็ค",
+              "owner": "คุณโน้ต",
+              "start": "",
+              "due": "2026-06-24",
+              "followUp": "2026-06-24",
+              "priority": "high",
+              "note": "รอการตอบกลับ; พบ Excel บางรายการระบุรับเช็คแต่ไม่มีวันที่",
+              "progress": 0
+            },
+            {
+              "id": "jmt-cheque-3",
+              "title": "กำหนดรูปแบบแสดงผลสำหรับทีมติดตามหนี้",
+              "owner": "คุณโน้ต",
+              "start": "",
+              "due": "2026-06-24",
+              "followUp": "2026-06-24",
+              "priority": "medium",
+              "note": "สรุป Requirement เพื่อใช้จัดลำดับความสำคัญในการติดตาม",
+              "progress": 0
+            },
+            {
+              "id": "jmt-cheque-4",
+              "title": "เชื่อมระบบ Tagging เพื่อลด Manual Excel",
+              "owner": "คุณแน็ท",
+              "start": "",
+              "due": "2026-06-24",
+              "followUp": "2026-06-24",
+              "priority": "high",
+              "note": "รอคุณโน้ตประสานคุณหมูเรื่องช่องทาง สิทธิ์ Criteria, Com Code และเลขบัญชี",
+              "progress": 0
+            },
+            {
+              "id": "jmt-cheque-5",
+              "title": "พัฒนา Dashboard และคู่มือการใช้งาน",
+              "owner": "คุณแน็ท",
+              "start": "",
+              "due": "2026-06-24",
+              "followUp": "2026-06-24",
+              "priority": "medium",
+              "note": "RV.1 ระบุคาดแล้วเสร็จ 24/06/2026 หลังได้ข้อสรุป",
+              "progress": 0
+            }
+          ]
+        },
+        {
+          "id": "jmt-rv1-duplicate",
+          "title": "Duplicate ID Management",
+          "owner": "คุณศักดิ์",
+          "start": "2026-06-01",
+          "due": "2026-06-24",
+          "followUp": "2026-06-24",
+          "priority": "medium",
+          "note": "RV.1 รายงาน Progress 95%; Dashboard 3 หน้าเสร็จและเปิด UAT แล้ว เหลือตรวจคำศัพท์และ Feedback จากคุณโม",
+          "reportedProgress": 95,
+          "progress": 95,
+          "items": [
+            {
+              "id": "jmt-duplicate-1",
+              "title": "Data Cleansing และวิเคราะห์ Account Overview",
+              "owner": "คุณศักดิ์",
+              "start": "",
+              "due": "2026-06-10",
+              "followUp": "2026-06-10",
+              "priority": "medium",
+              "note": "ดึงและทำความสะอาดข้อมูลตัวตนซ้ำเสร็จแล้ว",
+              "progress": 100
+            },
+            {
+              "id": "jmt-duplicate-2",
+              "title": "Dashboard Collateral_summary / Duplicate_summary / Operation",
+              "owner": "คุณศักดิ์",
+              "start": "",
+              "due": "2026-06-10",
+              "followUp": "2026-06-10",
+              "priority": "medium",
+              "note": "พัฒนาเสร็จและเปิดให้ User ทดลองใช้งานจริง",
+              "progress": 100
+            },
+            {
+              "id": "jmt-duplicate-3",
+              "title": "ยืนยัน Terminology ภาษา JMT และ Feedback คุณโม",
+              "owner": "คุณศักดิ์",
+              "start": "",
+              "due": "2026-06-24",
+              "followUp": "2026-06-24",
+              "priority": "medium",
+              "note": "ประชุม 17 มิ.ย. ระบุว่าเบื้องต้นไม่มีแก้เพิ่ม แต่ยังรอ Feedback อย่างเป็นทางการ",
+              "progress": 0
+            },
+            {
+              "id": "jmt-duplicate-4",
+              "title": "จัดทำ Report และ User Manual",
+              "owner": "คุณศักดิ์",
+              "start": "",
+              "due": "2026-06-24",
+              "followUp": "2026-06-24",
+              "priority": "medium",
+              "note": "ให้แล้วเสร็จภายใน 1 สัปดาห์หลังได้ข้อสรุป",
+              "progress": 0
+            }
+          ]
+        },
+        {
+          "id": "jmt-rv1-payment",
+          "title": "Payment Month Performance",
+          "owner": "คุณศักดิ์",
+          "start": "2026-06-01",
+          "due": "2026-06-24",
+          "followUp": "2026-06-24",
+          "priority": "medium",
+          "note": "RV.1 รายงาน Progress 95%; ดึงข้อมูลถึงปี 2012 เพิ่ม Secured และ Dashboard Long-term Trend แล้ว",
+          "reportedProgress": 95,
+          "progress": 95,
+          "items": [
+            {
+              "id": "jmt-payment-1",
+              "title": "Data Cleansing และข้อมูลย้อนหลังถึงปี 2012",
+              "owner": "คุณศักดิ์",
+              "start": "",
+              "due": "2026-06-10",
+              "followUp": "2026-06-10",
+              "priority": "medium",
+              "note": "รวม Group Code และข้อมูล Secured ตาม Requirement",
+              "progress": 100
+            },
+            {
+              "id": "jmt-payment-2",
+              "title": "Dashboard % Pay Origin เทียบ % Pay Balance",
+              "owner": "คุณศักดิ์",
+              "start": "",
+              "due": "2026-06-10",
+              "followUp": "2026-06-10",
+              "priority": "medium",
+              "note": "Dashboard Long-term Trend พัฒนาเสร็จแล้ว",
+              "progress": 100
+            },
+            {
+              "id": "jmt-payment-3",
+              "title": "เพิ่ม Line Trend ยอดหนี้ที่เก็บได้",
+              "owner": "คุณศักดิ์",
+              "start": "",
+              "due": "2026-06-24",
+              "followUp": "2026-06-24",
+              "priority": "high",
+              "note": "Next Action จากประชุม 17/06/2026",
+              "progress": 0
+            },
+            {
+              "id": "jmt-payment-4",
+              "title": "แก้ Tooltip และยืนยันวัน Auto-update รายเดือน",
+              "owner": "คุณศักดิ์",
+              "start": "",
+              "due": "2026-06-24",
+              "followUp": "2026-06-24",
+              "priority": "high",
+              "note": "รอคุณโน้ต/คุณโมคอนเฟิร์ม Actual date",
+              "progress": 0
+            },
+            {
+              "id": "jmt-payment-5",
+              "title": "ติดตาม Com Code กลุ่ม SECURED ที่หายจาก Server 70",
+              "owner": "คุณโน้ต",
+              "start": "",
+              "due": "2026-06-24",
+              "followUp": "2026-06-24",
+              "priority": "high",
+              "note": "ตรวจว่าข้อมูลอยู่ระบบ AMC หรือลืม Join ลง Server 70",
+              "progress": 0
+            },
+            {
+              "id": "jmt-payment-6",
+              "title": "จัดทำ Report และ User Manual",
+              "owner": "คุณศักดิ์",
+              "start": "",
+              "due": "2026-06-24",
+              "followUp": "2026-06-24",
+              "priority": "medium",
+              "note": "ดำเนินการหลังสรุปผลตรวจสอบ",
+              "progress": 0
+            }
+          ]
+        },
+        {
+          "id": "jmt-rv1-cashflow",
+          "title": "Cash Flow Prediction",
+          "owner": "คุณศักดิ์",
+          "start": "2026-06-01",
+          "due": "2026-07-01",
+          "followUp": "2026-07-01",
+          "priority": "high",
+          "note": "RV.1 รายงาน Progress 50%; ประชุม 17 มิ.ย. พบว่าไม่มี Snapshot ตั้งแต่มกราคม ปัจจุบัน Accuracy 84-85% และเป้าหมาย 95%",
+          "reportedProgress": 50,
+          "progress": 50,
+          "items": [
+            {
+              "id": "jmt-cashflow-1",
+              "title": "Backup และอัปเดตข้อมูลปัจจุบัน",
+              "owner": "คุณศักดิ์",
+              "start": "",
+              "due": "2026-06-17",
+              "followUp": "2026-06-17",
+              "priority": "medium",
+              "note": "สถานะ Data Cleansing & Preparation 50% ตาม RV.1",
+              "progress": 50
+            },
+            {
+              "id": "jmt-cashflow-2",
+              "title": "รัน Python และแกะโครงสร้างเดิมของคุณเจมส์",
+              "owner": "คุณศักดิ์",
+              "start": "",
+              "due": "2026-06-24",
+              "followUp": "2026-06-24",
+              "priority": "high",
+              "note": "ใช้ข้อมูลปัจจุบันเป็นฐาน Forecast ล่วงหน้า 3 เดือน",
+              "progress": 0
+            },
+            {
+              "id": "jmt-cashflow-3",
+              "title": "วิเคราะห์ Factors เพื่อเพิ่ม Accuracy จาก 84-85% เป็น 95%",
+              "owner": "คุณแอ๋ม",
+              "start": "",
+              "due": "2026-06-24",
+              "followUp": "2026-06-24",
+              "priority": "high",
+              "note": "PM รวบรวมข้อมูลหลังบ้านและ Servicing เพื่อปรับปรุงโมเดล",
+              "progress": 0
+            },
+            {
+              "id": "jmt-cashflow-4",
+              "title": "ประชุมสรุปรูปแบบ Dashboard",
+              "owner": "คุณศักดิ์",
+              "start": "",
+              "due": "2026-06-24",
+              "followUp": "2026-06-24",
+              "priority": "medium",
+              "note": "RV.1 กำหนด Presentation Alignment Meeting วันที่ 24/06/2026",
+              "progress": 0
+            },
+            {
+              "id": "jmt-cashflow-5",
+              "title": "พัฒนา Dashboard หลังสรุปรูปแบบ",
+              "owner": "คุณศักดิ์",
+              "start": "",
+              "due": "2026-07-01",
+              "followUp": "2026-07-01",
+              "priority": "medium",
+              "note": "เอกสารระบุใช้เวลา 1 สัปดาห์หลังได้ข้อสรุป",
+              "progress": 0
+            },
+            {
+              "id": "jmt-cashflow-6",
+              "title": "จัดทำ Report และ User Manual",
+              "owner": "คุณศักดิ์",
+              "start": "",
+              "due": "2026-07-01",
+              "followUp": "2026-07-01",
+              "priority": "medium",
+              "note": "ดำเนินการหลังข้อมูลและผลตรวจสอบสมบูรณ์",
+              "progress": 0
+            }
+          ]
+        }
+      ],
+      "meetings": [
+        {
+          "id": "jmt-meeting-20260617",
+          "title": "ประชุมความคืบหน้า Data Reporting & Prediction Model",
+          "date": "2026-06-17",
+          "time": "10:00",
+          "owner": "คุณแอ๋ม",
+          "type": "meeting",
+          "note": "ผู้เข้าร่วม คุณโน้ต คุณแน็ท คุณศักดิ์ คุณแอ๋ม; ประชุมถึง 10:30 น."
+        },
+        {
+          "id": "jmt-meeting-20260624",
+          "title": "Presentation Alignment - Cash Flow Prediction",
+          "date": "2026-06-24",
+          "time": "",
+          "owner": "คุณศักดิ์",
+          "type": "meeting",
+          "note": "สรุปแนวทางและรูปแบบการนำเสนอข้อมูลบน Dashboard ตาม RV.1"
+        }
+      ],
+      "tasks": [
+        [
+          "Judgment vs. Initial Debt Analysis",
+          50,
+          "คุณศักดิ์"
+        ],
+        [
+          "Cheque Receipt Prediction",
+          50,
+          "คุณแน็ท"
+        ],
+        [
+          "Duplicate ID Management",
+          95,
+          "คุณศักดิ์"
+        ],
+        [
+          "Payment Month Performance",
+          95,
+          "คุณศักดิ์"
+        ],
+        [
+          "Cash Flow Prediction",
+          50,
+          "คุณศักดิ์"
+        ]
+      ],
+      "color": "#19a8b8",
+      "permissions": {
+        "view": [
+          "admin",
+          "executive",
+          "manager",
+          "accounting"
+        ],
+        "finance": [
+          "admin",
+          "accounting"
+        ],
+        "edit": [
+          "admin",
+          "manager"
+        ]
+      }
+    },
+    {
+      "id": "sdc",
+      "name": "SCD Project",
+      "company": "ยังไม่ระบุ",
+      "client": "ยังไม่ระบุ",
+      "desc": "ระบบปฏิบัติการรับสินค้า คลัง WH3 ส่งออกสินค้า วางบิลอัตโนมัติ และรายงานผู้บริหาร ตามเอกสารข้อกำหนด 4 โมดูล",
+      "manager": "ยังไม่ระบุ",
+      "team": [
+        "ยังไม่ระบุ"
+      ],
+      "color": "#ff9f43",
+      "startDate": "",
+      "deadline": "",
+      "value": 54000,
+      "cost": 0,
+      "costStatus": "ยังไม่ระบุ",
+      "wht": 0,
+      "whtStatus": "ยังไม่ระบุ",
+      "paid": "ยังไม่ระบุ",
+      "progressSource": "ยังไม่มีรายการอัปเดต Progress",
+      "permissions": {
+        "view": [
+          "admin",
+          "executive",
+          "manager",
+          "accounting"
+        ],
+        "finance": [
+          "admin",
+          "accounting"
+        ],
+        "edit": [
+          "admin",
+          "manager"
+        ]
+      },
+      "sourceDocuments": [
+        {
+          "id": "scd-source-module-1",
+          "name": "1.Module การรับสินค้าจากคลังลูกค้า.docx",
+          "type": "DOCX",
+          "sourceDate": "2026-06-15",
+          "originalPath": "1.Module การรับสินค้าจากคลังลูกค้า.docx",
+          "driveUrl": ""
+        },
+        {
+          "id": "scd-source-module-2",
+          "name": "2.Module พนักงานรับเข้าสินค้า.docx",
+          "type": "DOCX",
+          "sourceDate": "2026-06-15",
+          "originalPath": "2.Module พนักงานรับเข้าสินค้า.docx",
+          "driveUrl": ""
+        },
+        {
+          "id": "scd-source-module-3",
+          "name": "3.Module ปฏิบัติการส่งออกสินค้า.docx",
+          "type": "DOCX",
+          "sourceDate": "2026-06-15",
+          "originalPath": "3.Module ปฏิบัติการส่งออกสินค้า.docx",
+          "driveUrl": ""
+        },
+        {
+          "id": "scd-source-module-4",
+          "name": "4.Module การวางบิลและรายงานภาพรวม .docx",
+          "type": "DOCX",
+          "sourceDate": "2026-06-15",
+          "originalPath": "4.Module การวางบิลและรายงานภาพรวม .docx",
+          "driveUrl": ""
+        }
+      ],
+      "workstreams": [
+        {
+          "id": "scd-module-1",
+          "title": "Module 1: การรับสินค้าจากคลังลูกค้า",
+          "owner": "ยังไม่ระบุ",
+          "start": "",
+          "due": "",
+          "followUp": "",
+          "priority": "medium",
+          "note": "Cargo Pickup, หลักฐานภาพ, GPS/เวลา และ KPI งานคนขับ ตามเอกสาร Module 1",
+          "progress": 0,
+          "items": [
+            {
+              "id": "scd-m1-1",
+              "title": "เปิดใบงาน Cargo Pickup และออก Job ID",
+              "owner": "ยังไม่ระบุ",
+              "start": "",
+              "due": "",
+              "followUp": "",
+              "priority": "medium",
+              "note": "รองรับทั้งกรณีแอดมินกรอกข้อมูลล่วงหน้า และใบงานเปล่าสำหรับคนขับเขียน Cargo เอง",
+              "progress": 0
+            },
+            {
+              "id": "scd-m1-2",
+              "title": "บันทึกข้อมูล Cargo Pickup 10 รายการ",
+              "owner": "ยังไม่ระบุ",
+              "start": "",
+              "due": "",
+              "followUp": "",
+              "priority": "medium",
+              "note": "วันที่ ลูกค้า จุดรับ คนขับ/ทะเบียน House/จำนวน แพ็ก ลายเซ็น เวลาเดินทาง และปลายทาง",
+              "progress": 0
+            },
+            {
+              "id": "scd-m1-3",
+              "title": "เช็คอิน เริ่มงาน และเก็บ GPS/เวลา",
+              "owner": "ยังไม่ระบุ",
+              "start": "",
+              "due": "",
+              "followUp": "",
+              "priority": "medium",
+              "note": "คนขับกดเริ่มงานและถ่ายภาพสินค้าก่อนขึ้นรถ",
+              "progress": 0
+            },
+            {
+              "id": "scd-m1-4",
+              "title": "แยกเคสพิเศษ WD/MD และติดสติ๊กเกอร์สี",
+              "owner": "ยังไม่ระบุ",
+              "start": "",
+              "due": "",
+              "followUp": "",
+              "priority": "medium",
+              "note": "บังคับขั้นตอนแยกประเภทสินค้าก่อนส่งต่อ",
+              "progress": 0
+            },
+            {
+              "id": "scd-m1-5",
+              "title": "กำหนดปลายทาง WH3, TG, TGINT หรือ BFS",
+              "owner": "ยังไม่ระบุ",
+              "start": "",
+              "due": "",
+              "followUp": "",
+              "priority": "medium",
+              "note": "ผูกปลายทางกับ House Number และเส้นทางจัดส่ง",
+              "progress": 0
+            },
+            {
+              "id": "scd-m1-6",
+              "title": "แนบเอกสารที่ลงนามและปิดงาน",
+              "owner": "ยังไม่ระบุ",
+              "start": "",
+              "due": "",
+              "followUp": "",
+              "priority": "medium",
+              "note": "ถ่ายภาพใบเสร็จหรือ Cargo Pickup Form พร้อม GPS และเวลาสิ้นสุด",
+              "progress": 0
+            },
+            {
+              "id": "scd-m1-7",
+              "title": "Dashboard Job Count และ Duration Tracking",
+              "owner": "ยังไม่ระบุ",
+              "start": "",
+              "due": "",
+              "followUp": "",
+              "priority": "medium",
+              "note": "คำนวณจำนวนงานต่อคนขับและเวลาจริงจาก Start/End Time",
+              "progress": 0
+            },
+            {
+              "id": "scd-m1-8",
+              "title": "จัดเก็บรูปบน Cloud และบันทึก Image URL",
+              "owner": "ยังไม่ระบุ",
+              "start": "",
+              "due": "",
+              "followUp": "",
+              "priority": "medium",
+              "note": "บีบอัดรูป รับ Base64 จัดเก็บตามวันหรือ House Number และบันทึกลิงก์",
+              "progress": 0
+            }
+          ]
+        },
+        {
+          "id": "scd-module-2",
+          "title": "Module 2: พนักงานรับเข้าสินค้า WH3",
+          "owner": "ยังไม่ระบุ",
+          "start": "",
+          "due": "",
+          "followUp": "",
+          "priority": "medium",
+          "note": "Inbound workflow, การสแกน House, Track routing, putaway และ audit trail ตามเอกสาร Module 2",
+          "progress": 0,
+          "items": [
+            {
+              "id": "scd-m2-1",
+              "title": "ตรวจ Cargo Pickup Form และจับคู่ Invoice/PO",
+              "owner": "ยังไม่ระบุ",
+              "start": "",
+              "due": "",
+              "followUp": "",
+              "priority": "medium",
+              "note": "ถ้าไม่พบเอกสารให้พักสถานะ รอ Confirm EI",
+              "progress": 0
+            },
+            {
+              "id": "scd-m2-2",
+              "title": "สแกน House และแสดงข้อมูลล่าสุด",
+              "owner": "ยังไม่ระบุ",
+              "start": "",
+              "due": "",
+              "followUp": "",
+              "priority": "medium",
+              "note": "แสดง Flight จำนวนสินค้า และปลายทางจากข้อมูลที่อัปเดตทุก 2 ชั่วโมง",
+              "progress": 0
+            },
+            {
+              "id": "scd-m2-3",
+              "title": "แยก Track เดี่ยวและ Track คู่",
+              "owner": "ยังไม่ระบุ",
+              "start": "",
+              "due": "",
+              "followUp": "",
+              "priority": "medium",
+              "note": "Track คู่ไป Cross-Dock/Terminal; Track เดี่ยวเข้าสู่การจัดเก็บ WH3",
+              "progress": 0
+            },
+            {
+              "id": "scd-m2-4",
+              "title": "WD Checklist และตรวจสภาพสินค้า",
+              "owner": "ยังไม่ระบุ",
+              "start": "",
+              "due": "",
+              "followUp": "",
+              "priority": "medium",
+              "note": "บังคับตรวจทุกมุม ถ่ายหลักฐาน และยืนยันสีสติ๊กเกอร์",
+              "progress": 0
+            },
+            {
+              "id": "scd-m2-5",
+              "title": "Twin-Scanning ล็อกตำแหน่งสินค้า",
+              "owner": "ยังไม่ระบุ",
+              "start": "",
+              "due": "",
+              "followUp": "",
+              "priority": "medium",
+              "note": "สแกน House และ Location เพื่อ Putaway หรือ Relocation พร้อมประวัติ",
+              "progress": 0
+            },
+            {
+              "id": "scd-m2-6",
+              "title": "แนบ Cargo/EI Confirm และปิดงานรับเข้า",
+              "owner": "ยังไม่ระบุ",
+              "start": "",
+              "due": "",
+              "followUp": "",
+              "priority": "medium",
+              "note": "เก็บเวลา ผู้ปฏิบัติงาน พิกัด และ Doc Attachment URL",
+              "progress": 0
+            },
+            {
+              "id": "scd-m2-7",
+              "title": "Email parser และ Upsert ทุก 2 ชั่วโมง",
+              "owner": "ยังไม่ระบุ",
+              "start": "",
+              "due": "",
+              "followUp": "",
+              "priority": "medium",
+              "note": "ใช้ House Number เป็น Primary Key สำหรับข้อมูล Flight/จำนวน/ปลายทาง",
+              "progress": 0
+            },
+            {
+              "id": "scd-m2-8",
+              "title": "รายงาน Daily Inbound และ Export",
+              "owner": "ยังไม่ระบุ",
+              "start": "",
+              "due": "",
+              "followUp": "",
+              "priority": "medium",
+              "note": "สรุปงานทั้งหมด Stored และ Direct Outbound พร้อม PDF/Excel/CSV",
+              "progress": 0
+            }
+          ]
+        },
+        {
+          "id": "scd-module-3",
+          "title": "Module 3: ปฏิบัติการส่งออกสินค้า",
+          "owner": "ยังไม่ระบุ",
+          "start": "",
+          "due": "",
+          "followUp": "",
+          "priority": "medium",
+          "note": "Outbound ตั้งแต่เบิก WH3 จอง AOT ส่งมอบ Terminal ชั่ง เอ็กซเรย์ และ Loading Detail ตามเอกสาร Module 3",
+          "progress": 0,
+          "items": [
+            {
+              "id": "scd-m3-1",
+              "title": "ตรวจเอกสาร Cargo Transfer, Permit และเอกสารลิเธียม",
+              "owner": "ยังไม่ระบุ",
+              "start": "",
+              "due": "",
+              "followUp": "",
+              "priority": "medium",
+              "note": "ล็อกการส่งต่อเมื่อเอกสารบังคับยังไม่ครบ",
+              "progress": 0
+            },
+            {
+              "id": "scd-m3-2",
+              "title": "Reverse Twin-Scanning เพื่อเบิกสินค้า",
+              "owner": "ยังไม่ระบุ",
+              "start": "",
+              "due": "",
+              "followUp": "",
+              "priority": "medium",
+              "note": "สแกน House ยืนยัน EI และคืนสถานะ Location เป็น Available",
+              "progress": 0
+            },
+            {
+              "id": "scd-m3-3",
+              "title": "เก็บ e-Signature/ภาพเอกสาร EI",
+              "owner": "ยังไม่ระบุ",
+              "start": "",
+              "due": "",
+              "followUp": "",
+              "priority": "medium",
+              "note": "ผูกไฟล์หลักฐานกับรหัสงานเพื่อดูย้อนหลัง",
+              "progress": 0
+            },
+            {
+              "id": "scd-m3-4",
+              "title": "AOT Booking และสถานะอนุมัติ",
+              "owner": "ยังไม่ระบุ",
+              "start": "",
+              "due": "",
+              "followUp": "",
+              "priority": "medium",
+              "note": "ติดตามสถานะจองรถและแจ้งคนขับเมื่อเข้าส่งได้",
+              "progress": 0
+            },
+            {
+              "id": "scd-m3-5",
+              "title": "QC โหลดรถและหลักฐานก่อนเดินทาง",
+              "owner": "ยังไม่ระบุ",
+              "start": "",
+              "due": "",
+              "followUp": "",
+              "priority": "medium",
+              "note": "สแกนยอดเทียบ Manifest ถ่ายภาพ และส่งมอบที่ Terminal",
+              "progress": 0
+            },
+            {
+              "id": "scd-m3-6",
+              "title": "จับเวลา Weighing และ X-Ray",
+              "owner": "ยังไม่ระบุ",
+              "start": "",
+              "due": "",
+              "followUp": "",
+              "priority": "medium",
+              "note": "เก็บ Start/End Timestamp เพื่อคำนวณ KPI",
+              "progress": 0
+            },
+            {
+              "id": "scd-m3-7",
+              "title": "แจ้งเตือน Re-X-Ray และเงื่อนไขก่อน Flight 4 ชั่วโมง",
+              "owner": "ยังไม่ระบุ",
+              "start": "",
+              "due": "",
+              "followUp": "",
+              "priority": "medium",
+              "note": "แจ้งหัวหน้างานทันทีเมื่อสแกนไม่ผ่านหรือเสี่ยงล่าช้า",
+              "progress": 0
+            },
+            {
+              "id": "scd-m3-8",
+              "title": "รวมจ็อบ อัปโหลด Loading Detail และปิดงาน",
+              "owner": "ยังไม่ระบุ",
+              "start": "",
+              "due": "",
+              "followUp": "",
+              "priority": "medium",
+              "note": "ตรวจสินค้าครบตาม Flight รวม Customer Self-Delivery ก่อนอนุญาตปิดงาน",
+              "progress": 0
+            }
+          ]
+        },
+        {
+          "id": "scd-module-4",
+          "title": "Module 4: การวางบิลและรายงานภาพรวม",
+          "owner": "ยังไม่ระบุ",
+          "start": "",
+          "due": "",
+          "followUp": "",
+          "priority": "medium",
+          "note": "Billing automation และ Executive Dashboard ตามเอกสาร Module 4",
+          "progress": 0,
+          "items": [
+            {
+              "id": "scd-m4-1",
+              "title": "เปลี่ยนสถานะ Ready for Billing อัตโนมัติ",
+              "owner": "ยังไม่ระบุ",
+              "start": "",
+              "due": "",
+              "followUp": "",
+              "priority": "medium",
+              "note": "ทำงานเมื่อ Module 3 ปิดงานและอัปโหลด Loading Detail แล้ว",
+              "progress": 0
+            },
+            {
+              "id": "scd-m4-2",
+              "title": "แจ้งทีมบัญชีและตรวจเอกสารวางบิล",
+              "owner": "ยังไม่ระบุ",
+              "start": "",
+              "due": "",
+              "followUp": "",
+              "priority": "medium",
+              "note": "แจ้ง House ที่พร้อมวางบิลและให้บัญชีรีวิวเอกสารแนบ",
+              "progress": 0
+            },
+            {
+              "id": "scd-m4-3",
+              "title": "สร้าง Invoice PDF แบบ 1-Click",
+              "owner": "ยังไม่ระบุ",
+              "start": "",
+              "due": "",
+              "followUp": "",
+              "priority": "medium",
+              "note": "ดึง Customer Master และ Transaction ใส่ Template ก่อนพรีวิว",
+              "progress": 0
+            },
+            {
+              "id": "scd-m4-4",
+              "title": "ส่งอีเมลพร้อม Invoice และหลักฐาน",
+              "owner": "ยังไม่ระบุ",
+              "start": "",
+              "due": "",
+              "followUp": "",
+              "priority": "medium",
+              "note": "แนบ PDF และรูปหน้างาน ส่งลูกค้าพร้อม CC บริษัท",
+              "progress": 0
+            },
+            {
+              "id": "scd-m4-5",
+              "title": "ติดตาม Billed, Due Date และสถานะหนี้",
+              "owner": "ยังไม่ระบุ",
+              "start": "",
+              "due": "",
+              "followUp": "",
+              "priority": "medium",
+              "note": "คำนวณวันครบกำหนดจาก Credit Term และแยก Overdue/Not Due",
+              "progress": 0
+            },
+            {
+              "id": "scd-m4-6",
+              "title": "Financial Executive Dashboard",
+              "owner": "ยังไม่ระบุ",
+              "start": "",
+              "due": "",
+              "followUp": "",
+              "priority": "medium",
+              "note": "สรุปรายได้ ยอดรอวางบิล และ Top Clients",
+              "progress": 0
+            },
+            {
+              "id": "scd-m4-7",
+              "title": "Operational KPI และ Terminal Bottleneck Dashboard",
+              "owner": "ยังไม่ระบุ",
+              "start": "",
+              "due": "",
+              "followUp": "",
+              "priority": "medium",
+              "note": "วิเคราะห์ Lead Time, Re-X-Ray Rate และเวลาชั่งเฉลี่ย",
+              "progress": 0
+            }
+          ]
+        }
+      ],
+      "meetings": [],
+      "tasks": [
+        [
+          "Module 1: การรับสินค้าจากคลังลูกค้า",
+          0,
+          "ยังไม่ระบุ"
+        ],
+        [
+          "Module 2: พนักงานรับเข้าสินค้า WH3",
+          0,
+          "ยังไม่ระบุ"
+        ],
+        [
+          "Module 3: ปฏิบัติการส่งออกสินค้า",
+          0,
+          "ยังไม่ระบุ"
+        ],
+        [
+          "Module 4: การวางบิลและรายงานภาพรวม",
+          0,
+          "ยังไม่ระบุ"
+        ]
+      ],
+      "progress": 0,
+      "status": "active"
+    }
+  ],
+  "updates": [
+    {
+      "date": "2026-06-19T12:00:00+07:00",
+      "project": "sdc",
+      "task": "บันทึกข้อกำหนดโครงการ SCD",
+      "from": 0,
+      "to": 0,
+      "note": "นำเข้าข้อมูลจริงจากเอกสาร Word 4 โมดูล; ยังไม่ระบุ Timeline ผู้รับผิดชอบ ค่าใช้จ่าย และภาษี",
+      "user": "ผู้ดูแลระบบ"
+    },
+    {
+      "date": "2026-06-17T10:30:00+07:00",
+      "project": "jmt",
+      "task": "ประชุมความคืบหน้า JMT",
+      "from": 68,
+      "to": 68,
+      "note": "ID Duplicate รอ Feedback; Payment เพิ่ม Line Trend/Tooltip/Auto-update; Cash Flow ไม่มี Snapshot และ Accuracy 84-85%; ตรวจ SECURED และ Tagging",
+      "user": "ณลติกาญต์ พันธ์ลูกฟัก"
+    },
+    {
+      "date": "2026-06-10T12:47:00+07:00",
+      "project": "jmt",
+      "task": "รายงาน Project Task Updates RV.1",
+      "from": 0,
+      "to": 68,
+      "note": "Progress รายงานจริง 5 งาน: Judgment 50%, Cheque 50%, Duplicate ID 95%, Payment Month 95%, Cash Flow 50%",
+      "user": "JMT / Data Cube"
+    },
+    {
+      "date": "2026-06-08T17:30:00+07:00",
+      "project": "jmt",
+      "task": "ภาพรวมโครงการ JMT",
+      "from": 0,
+      "to": 0,
+      "note": "ข้อมูลประกอบด้าน Legal Analytics, Duplicate ID, Payment/Cash Flow, Employee Performance และ Cheque Forecast",
+      "user": "Data Cube"
+    }
+  ],
+  "standaloneEvents": [],
+  "users": [
+    {
+      "id": "admin",
+      "name": "ผู้ดูแลระบบ",
+      "role": "admin",
+      "active": true
+    },
+    {
+      "id": "executive",
+      "name": "ผู้บริหาร",
+      "role": "executive",
+      "active": true
+    },
+    {
+      "id": "accounting",
+      "name": "ฝ่ายบัญชี",
+      "role": "accounting",
+      "active": true
+    }
+  ]
+}

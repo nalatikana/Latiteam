@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Latiteam Project Tracking</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css?v=20260619-7">
+  <link rel="stylesheet" href="planning.css?v=20260619-7">
+  <link rel="stylesheet" href="auth.css?v=20260619-1">
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar">
+      <div class="brand"><span class="brand-mark">L</span><div><strong>Latiteam</strong><small>PROJECT TRACKING</small></div></div>
+      <nav id="mainNav">
+        <button class="nav-item active" data-view="dashboard"><span>⌂</span> ภาพรวม</button>
+        <button class="nav-item" data-view="projects"><span>▦</span> โปรเจกต์</button>
+        <button class="nav-item" data-view="updates"><span>◴</span> อัปเดตงาน</button>
+        <button class="nav-item" data-view="agenda"><span>☑</span> งานติดตามวันนี้</button>
+        <button class="nav-item" data-view="finance"><span>฿</span> บัญชีและการเงิน</button>
+        <button class="nav-item admin-only" data-view="access"><span>♙</span> สิทธิ์การเข้าถึง</button>
+      </nav>
+      <div class="sidebar-card"><span class="live-dot"></span><div><b>ระบบพร้อมใช้งาน</b><small>ข้อมูลบันทึกอัตโนมัติ</small></div></div>
+      <div class="sidebar-footer">LATITEAM © 2026</div>
+    </aside>
+
+    <main>
+      <header class="topbar">
+        <button class="menu-button" id="menuButton" aria-label="เปิดเมนู">☰</button>
+        <div class="page-heading"><p>ระบบติดตามและบริหารโครงการ</p><h1 id="pageTitle">ภาพรวมองค์กร</h1></div>
+        <div class="header-actions">
+          <label class="project-filter"><span>มุมมอง</span><select id="projectFilter"><option value="all">ทุกโปรเจกต์</option></select></label>
+          <button class="icon-button" id="notificationButton" aria-label="การแจ้งเตือน">♢<i id="alertCount">2</i></button>
+          <div class="user-control">
+            <span class="avatar">กท</span>
+            <label><small>เข้าสู่ระบบในสิทธิ์</small><select id="roleSelect"><option value="admin">ผู้ดูแลระบบ</option><option value="executive">ผู้บริหาร</option><option value="manager">ผู้จัดการโครงการ</option><option value="team">ทีมงาน</option><option value="accounting">ฝ่ายบัญชี</option></select></label>
+          </div>
+        </div>
+      </header>
+
+      <div class="content">
+        <section class="view active" id="dashboardView">
+          <div class="welcome"><div><span class="eyebrow">EXECUTIVE OVERVIEW</span><h2>สวัสดี, คุณกานต์</h2><p>ภาพรวมงานทั้งหมดที่คุณมีสิทธิ์เข้าถึง อัปเดตล่าสุดวันนี้</p></div><button class="primary" data-open-update>＋ อัปเดตความคืบหน้า</button></div>
+          <div class="stats-grid" id="statsGrid"></div>
+          <div class="dashboard-grid">
+            <article class="panel portfolio-panel"><div class="panel-head"><div><span class="eyebrow">PORTFOLIO</span><h3>สถานะโปรเจกต์</h3></div><button class="text-button" data-goto="projects">ดูทั้งหมด →</button></div><div id="portfolioList"></div></article>
+            <article class="panel chart-panel"><div class="panel-head"><div><span class="eyebrow">PROGRESS</span><h3>ความคืบหน้าภาพรวม</h3></div><span class="soft-badge">อัปเดตสด</span></div><div id="overallChart"></div></article>
+          </div>
+          <div class="dashboard-grid lower">
+            <article class="panel"><div class="panel-head"><div><span class="eyebrow">RECENT ACTIVITY</span><h3>กิจกรรมล่าสุด</h3></div><button class="text-button" data-goto="updates">ดูประวัติ →</button></div><div class="activity-list" id="activityList"></div></article>
+            <article class="panel"><div class="panel-head"><div><span class="eyebrow">UPCOMING</span><h3>กำหนดส่งใกล้ถึง</h3></div></div><div id="deadlineList"></div></article>
+          </div>
+        </section>
+
+        <section class="view" id="projectsView">
+          <div class="section-head"><div><span class="eyebrow">PROJECT PORTFOLIO</span><h2>โปรเจกต์ทั้งหมด</h2><p>ติดตามรายละเอียด ผู้รับผิดชอบ กำหนดส่ง และ KPI</p></div><button class="primary manager-only" id="addProjectButton">＋ เพิ่มโปรเจกต์</button></div>
+          <div class="toolbar"><div class="search">⌕ <input id="projectSearch" placeholder="ค้นหาชื่อโปรเจกต์หรือลูกค้า..."></div><div class="filter-pills"><button class="active" data-status="all">ทั้งหมด</button><button data-status="active">กำลังดำเนินการ</button><button data-status="risk">ต้องเฝ้าระวัง</button><button data-status="done">เสร็จแล้ว</button></div></div>
+          <div class="project-grid" id="projectGrid"></div>
+        </section>
+
+        <section class="view" id="detailView"><div id="projectDetail"></div></section>
+
+        <section class="view" id="updatesView">
+          <div class="section-head"><div><span class="eyebrow">AUDIT TRAIL</span><h2>ประวัติการอัปเดตงาน</h2><p>ตรวจสอบรายละเอียดการแก้ไขย้อนหลัง พร้อมชื่อผู้ดำเนินการ</p></div><div class="button-row"><select id="exportRange"><option value="daily">รายวัน</option><option value="weekly">รายสัปดาห์</option><option value="all">ทั้งหมด</option></select><button class="secondary" id="exportButton">⇩ Export CSV</button><button class="primary" data-open-update>＋ เพิ่มอัปเดต</button></div></div>
+          <div class="panel table-panel"><div class="table-wrap"><table><thead><tr><th>วันเวลา</th><th>โปรเจกต์ / รายการ</th><th>ความคืบหน้า</th><th>รายละเอียด</th><th>แก้ไขโดย</th></tr></thead><tbody id="updateTable"></tbody></table></div></div>
+        </section>
+
+        <section class="view" id="agendaView">
+          <div class="section-head"><div><span class="eyebrow">DAILY FOLLOW-UP CENTER</span><h2>งานติดตามวันนี้</h2><p>รวมสิ่งที่ต้องทำ งานเลยกำหนด และนัดติดตามครั้งถัดไปจากทุกโปรเจกต์</p></div><div class="button-row"><input type="date" id="agendaDate"><button class="primary" data-open-planning>＋ เพิ่มงานติดตาม</button></div></div>
+          <div class="stats-grid" id="agendaStats"></div>
+          <div class="agenda-layout"><div class="panel"><div class="panel-head"><div><span class="eyebrow">ACTION REQUIRED</span><h3>สิ่งที่ต้องติดตาม</h3></div><div class="agenda-filter"><button class="active" data-agenda-filter="all">ทั้งหมด</button><button data-agenda-filter="overdue">เลยกำหนด</button><button data-agenda-filter="today">วันนี้</button><button data-agenda-filter="upcoming">ถัดไป</button></div></div><div id="agendaList"></div></div><div class="panel timeline-panel"><div class="panel-head"><div><span class="eyebrow">7-DAY TIMELINE</span><h3>แผน 7 วันข้างหน้า</h3></div></div><div id="weekTimeline"></div></div></div>
+          <div class="panel calendar-panel"><div class="panel-head"><div><span class="eyebrow">CALENDAR VIEW</span><h3>ปฏิทินงาน ประชุม และ Timeline</h3></div><button class="secondary" data-open-planning>＋ เพิ่มนัด / งาน</button></div><div id="calendarGrid"></div></div>
+        </section>
+
+        <section class="view" id="financeView">
+          <div class="section-head"><div><span class="eyebrow">FINANCIAL CONTROL</span><h2>บัญชีและการเงิน</h2><p>มูลค่าโครงการ ค่าใช้จ่าย และภาษีหัก ณ ที่จ่าย</p></div><button class="secondary" id="exportFinance">⇩ Export การเงิน</button></div>
+          <div class="stats-grid" id="financeStats"></div>
+          <div class="panel table-panel"><div class="table-wrap"><table><thead><tr><th>บริษัท / โปรเจกต์</th><th>มูลค่าโครงการ</th><th>ค่าใช้จ่าย</th><th>กำไรคาดการณ์</th><th>หัก ณ ที่จ่าย</th><th>สถานะชำระเงิน</th></tr></thead><tbody id="financeTable"></tbody></table></div></div>
+        </section>
+
+        <section class="view" id="accessView">
+          <div class="section-head"><div><span class="eyebrow">ACCESS CONTROL</span><h2>สิทธิ์การเข้าถึง</h2><p>กำหนดให้แต่ละคนเห็นและแก้ไขเฉพาะโปรเจกต์ที่รับผิดชอบ</p></div><button class="primary">＋ เชิญผู้ใช้งาน</button></div>
+          <div class="access-layout"><div class="panel"><div class="panel-head"><h3>ผู้ใช้งานในระบบ</h3><span class="soft-badge">6 คน</span></div><div id="userList"></div></div><div class="panel permission-card"><span class="eyebrow">PERMISSION MATRIX</span><h3>หลักการกำหนดสิทธิ์</h3><div class="permission-row"><b>ผู้บริหาร</b><span>เลือกดูทุกโปรเจกต์และข้อมูลภาพรวม</span></div><div class="permission-row"><b>ผู้จัดการ</b><span>จัดการโปรเจกต์ ทีม และอนุมัติ Progress</span></div><div class="permission-row"><b>ทีมงาน</b><span>ดูและอัปเดตเฉพาะงานที่ได้รับมอบหมาย</span></div><div class="permission-row"><b>ฝ่ายบัญชี</b><span>เข้าถึงข้อมูลการเงินและสถานะชำระเงิน</span></div></div></div>
+        </section>
+      </div>
+    </main>
+  </div>
+
+  <div class="toast" id="toast"></div>
+  <div class="modal-backdrop" id="updateModal" aria-hidden="true"><div class="modal"><div class="modal-head"><div><span class="eyebrow">PROGRESS UPDATE</span><h2>อัปเดตความคืบหน้า</h2></div><button class="close-modal">×</button></div><form id="updateForm"><label>โปรเจกต์<select id="updateProject" required></select></label><label>หัวข้องาน<input id="updateTask" required placeholder="เช่น ออกแบบหน้า Dashboard"></label><div class="form-row"><label>ความคืบหน้า (%)<input id="updateProgress" type="number" min="0" max="100" required></label><label>สถานะ<select id="updateStatus"><option value="active">กำลังดำเนินการ</option><option value="risk">ติดปัญหา / ต้องเฝ้าระวัง</option><option value="done">เสร็จแล้ว</option></select></label></div><label>รายละเอียด<textarea id="updateNote" rows="4" required placeholder="สรุปสิ่งที่ทำ ปัญหา และขั้นตอนถัดไป..."></textarea></label><div class="modal-actions"><button type="button" class="secondary close-modal">ยกเลิก</button><button type="submit" class="primary">บันทึกการอัปเดต</button></div></form></div></div>
+
+  <div class="modal-backdrop" id="planningModal" aria-hidden="true"><div class="modal wide-modal"><div class="modal-head"><div><span class="eyebrow">WORK BREAKDOWN SETUP</span><h2>กำหนดงานและการติดตาม</h2></div><button class="close-planning">×</button></div><form id="planningForm"><div class="form-row"><label>โปรเจกต์<select id="planProject" required></select></label><label>ประเภทงาน<select id="planType"><option value="workstream">งานหลักภายใต้โปรเจกต์</option><option value="checklist">รายละเอียด / Checklist</option></select></label></div><label id="parentField" class="hidden">อยู่ภายใต้งานหลัก<select id="planParent"></select></label><label>ชื่องาน<input id="planTitle" required placeholder="ระบุชื่องานหรือสิ่งที่ต้องดำเนินการ"></label><div class="form-row three"><label>ผู้รับผิดชอบ<input id="planOwner" required placeholder="ชื่อผู้รับผิดชอบ"></label><label>วันเริ่ม<input id="planStart" type="date" required></label><label>กำหนดเสร็จ<input id="planDue" type="date" required></label></div><div class="form-row"><label>ติดตามครั้งถัดไป<input id="planFollowUp" type="date" required></label><label>ความสำคัญ<select id="planPriority"><option value="high">สูง</option><option value="medium" selected>ปานกลาง</option><option value="low">ต่ำ</option></select></label></div><label>รายละเอียดและสิ่งที่ต้องติดตาม<textarea id="planNote" rows="3" required placeholder="ระบุ Deliverable, ประเด็นรอคำตอบ หรือขั้นตอนถัดไป"></textarea></label><div class="modal-actions"><button type="button" class="secondary close-planning">ยกเลิก</button><button type="submit" class="primary">บันทึกและสร้าง Timeline</button></div></form></div></div>
+
+  <script src="app.js?v=20260619-7"></script>
+  <script src="planning.js?v=20260619-7"></script>
+  <script src="fixes.js?v=20260619-7"></script>
+  <script src="cloud-config.js?v=20260619-1"></script>
+  <script src="cloud-sync.js?v=20260619-2"></script>
+</body>
+</html>
