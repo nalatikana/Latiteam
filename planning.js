@@ -667,3 +667,55 @@ const billingRenderAll=renderAll;
 renderAll=function(){billingRenderAll();renderFinance();renderNotificationCenter()};
 installBillingEditor();
 renderAll();
+
+/* Assign project owner and team from real Supabase profiles, including profile photos. */
+function selectableProjectUsers(){return window.LatiteamSupabase?.getUsers?.()||[]}
+function projectUserById(id){return selectableProjectUsers().find(user=>user.id===id)}
+function projectRoleLabel(role){return({admin:'ผู้ดูแลระบบ',executive:'ผู้บริหาร',manager:'ผู้จัดการโครงการ',team:'ทีมงาน',accounting:'ฝ่ายบัญชี'})[role]||role}
+function profileAvatarMarkup(user,extraClass=''){
+  if(!user)return'';
+  const initialsText=(user.name||user.username||'?').trim().split(/\s+/).map(part=>part[0]).join('').slice(0,2).toUpperCase();
+  return `<span class="project-person-avatar ${user.avatarUrl?'has-photo':''} ${extraClass}" ${user.avatarUrl?`style="background-image:url('${user.avatarUrl}')"`:''}>${user.avatarUrl?'':initialsText}</span>`;
+}
+function installProjectUserPicker(){
+  const form=$('#projectEditForm');if(!form||$('#projectUserPicker'))return;
+  const managerInput=$('#editProjectManager'),teamInput=$('#editProjectTeam');
+  managerInput.closest('label').classList.add('hidden');teamInput.closest('label').classList.add('hidden');
+  managerInput.closest('.form-row').insertAdjacentHTML('afterend',`<div id="projectUserPicker" class="project-user-picker"><fieldset><legend>ผู้รับผิดชอบหลัก</legend><div id="projectManagerChoices" class="profile-choice-grid"></div></fieldset><fieldset><legend>ทีมงานในโปรเจค</legend><div id="projectTeamChoices" class="profile-choice-grid"></div></fieldset></div>`);
+  form.addEventListener('submit',()=>{
+    const project=projects.find(item=>item.id===$('#editProjectId').value),managerId=$('#projectManagerChoices input:checked')?.value||'',teamIds=$$('#projectTeamChoices input:checked').map(input=>input.value);
+    if(!project)return;
+    project.managerUserId=managerId;project.teamUserIds=teamIds;
+    const manager=projectUserById(managerId),teamUsers=teamIds.map(projectUserById).filter(Boolean);
+    managerInput.value=manager?.name||'';teamInput.value=teamUsers.map(user=>user.name).join(', ');
+  },true);
+}
+function renderProjectUserPicker(project){
+  installProjectUserPicker();
+  const users=selectableProjectUsers();
+  if(!users.length){$('#projectManagerChoices').innerHTML='<div class="empty-state">ยังไม่พบผู้ใช้จริง กรุณารอซิงก์ข้อมูลหรือเข้าสู่ระบบด้วย Admin</div>';$('#projectTeamChoices').innerHTML='<div class="empty-state">ยังไม่พบผู้ใช้จริง</div>';return}
+  const matchedManager=project.managerUserId||users.find(user=>user.name===project.manager)?.id||'';
+  const matchedTeam=Array.isArray(project.teamUserIds)&&project.teamUserIds.length?project.teamUserIds:users.filter(user=>(project.team||[]).includes(user.name)).map(user=>user.id);
+  const option=(user,type,checked)=>`<label class="profile-choice"><input type="${type}" name="${type==='radio'?'projectManagerUser':'projectTeamUsers'}" value="${user.id}" ${checked?'checked':''}>${profileAvatarMarkup(user)}<span><b>${user.name}</b><small>@${user.username} · ${projectRoleLabel(user.role)}</small></span></label>`;
+  $('#projectManagerChoices').innerHTML=users.map(user=>option(user,'radio',user.id===matchedManager)).join('');
+  $('#projectTeamChoices').innerHTML=users.map(user=>option(user,'checkbox',matchedTeam.includes(user.id))).join('');
+}
+const profileProjectEditor=openProjectEdit;
+openProjectEdit=function(id){profileProjectEditor(id);const project=projects.find(item=>item.id===id);if(project)renderProjectUserPicker(project)};
+
+function renderAssignedProfilePhotos(){
+  projects.forEach(project=>{
+    const manager=projectUserById(project.managerUserId);if(manager)project.manager=manager.name;
+    const assignedTeam=(project.teamUserIds||[]).map(projectUserById).filter(Boolean);if(assignedTeam.length)project.team=assignedTeam.map(user=>user.name);
+    const card=$(`[data-project="${project.id}"]`),root=card?.querySelector('.card-avatars');
+    if(root&&Array.isArray(project.teamUserIds)&&project.teamUserIds.length)root.innerHTML=project.teamUserIds.map(projectUserById).filter(Boolean).map(user=>profileAvatarMarkup(user,'small')).join('');
+  });
+  const project=projects.find(item=>item.id===activeDetailProject),title=$('#projectDetail .detail-title');
+  if(project&&title){let people=title.querySelector('.assigned-profile-photos');if(!people){title.insertAdjacentHTML('beforeend','<div class="assigned-profile-photos"></div>');people=title.querySelector('.assigned-profile-photos')}const ids=[project.managerUserId,...(project.teamUserIds||[])].filter(Boolean);people.innerHTML=[...new Set(ids)].map(projectUserById).filter(Boolean).map(user=>`${profileAvatarMarkup(user)}<span>${user.name}</span>`).join('')}
+}
+const profileRenderAll=renderAll;
+renderAll=function(){profileRenderAll();installProjectUserPicker();renderAssignedProfilePhotos()};
+const profileShowDetail=showDetail;
+showDetail=function(id){profileShowDetail(id);activeDetailProject=id;renderAssignedProfilePhotos()};
+planningShowDetail=showDetail;
+renderAll();
