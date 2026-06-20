@@ -86,20 +86,7 @@
   }
 
   function ensureDashboardCalendar(){
-    const dash = $q('#dashboardView');
-    if(!dash) return;
-    let panel = $q('#dashboardMonthOverviewForce');
-    if(!panel){
-      const anchor = dash.querySelector('.dashboard-grid');
-      if(!anchor) return;
-      anchor.insertAdjacentHTML('afterend', `<article class="panel month-overview-panel force-panel"><div class="month-overview-head"><div><span class="eyebrow">MONTHLY CALENDAR OVERVIEW</span><h3>ภาพรวมงานแบบปฏิทิน</h3></div><div class="calendar-legend"><span><i style="background:#3f9f77"></i>Follow-up</span><span><i style="background:#8a5cf6"></i>Meeting</span><span><i style="background:#f59f34"></i>Deadline</span><span><i style="background:#35a9c8"></i>Workstream</span></div></div><div id="dashboardMonthOverviewForce"></div></article>`);
-      panel = $q('#dashboardMonthOverviewForce');
-    }
-    const events = eventList();
-    const signature = events.map(e=>[e.id,e.date,e.time,e.title,e.owner].join('|')).join('||');
-    if(panel.dataset.renderSignature === signature) return;
-    panel.dataset.renderSignature = signature;
-    renderMonth(panel, events);
+    $qa('.force-panel').forEach(panel=>panel.remove());
   }
 
   function ensureEventModal(){
@@ -111,7 +98,7 @@
 
   function ensureVersionBadge(){
     if($q('#forceVersionBadge')) return;
-    document.body.insertAdjacentHTML('beforeend', `<div id="forceVersionBadge" style="position:fixed;right:16px;bottom:14px;z-index:9999;background:#132a63;color:#fff;border-radius:999px;padding:8px 12px;font:600 12px Kanit,sans-serif;box-shadow:0 10px 25px rgba(15,35,75,.18)">ระบบอัปเดตแล้ว v20260620-3</div>`);
+    document.body.insertAdjacentHTML('beforeend', `<div id="forceVersionBadge" style="position:fixed;right:16px;bottom:14px;z-index:9999;background:#132a63;color:#fff;border-radius:999px;padding:8px 12px;font:600 12px Kanit,sans-serif;box-shadow:0 10px 25px rgba(15,35,75,.18)">ระบบอัปเดตแล้ว v20260620-4</div>`);
   }
 
   function showEvent(id){
@@ -183,6 +170,9 @@
   }
 
   function enhanceDetail(){
+    $qa('.force-project-calendar').forEach(panel=>panel.remove());
+    $qa('[data-force-edit]').forEach(button=>button.remove());
+    const forcePerformance=$q('#projectPerformanceForce');if(forcePerformance)forcePerformance.closest('.panel')?.remove();
     const title = $q('.detail-title h2');
     if(!title) return;
     const name = title.textContent.trim();
@@ -190,7 +180,7 @@
     if(!p) return;
 
     const stack = $q('#projectDetail .detail-side-stack');
-    if(stack && !$q('#projectMiniCalendarForce')){
+    if(false && stack && !$q('#projectMiniCalendarForce')){
       stack.insertAdjacentHTML('afterbegin', `<div class="panel force-project-calendar"><div class="panel-head"><div><span class="eyebrow">PROJECT CALENDAR</span><h3>ปฏิทินโครงการนี้</h3></div></div><div id="projectMiniCalendarForce" class="project-mini-calendar"></div></div><div class="panel"><span class="eyebrow">EXECUTIVE PERFORMANCE</span><h3>Performance แยกผู้ดูแล</h3><div id="projectPerformanceForce" class="project-performance"></div></div>`);
     }
     const cal = $q('#projectMiniCalendarForce');
@@ -225,13 +215,6 @@
       }
     }
 
-    $qa('.check-row').forEach(row => {
-      if(row.querySelector('[data-force-edit]')) return;
-      const input = row.querySelector('[data-progress-item]');
-      if(!input) return;
-      row.insertAdjacentHTML('beforeend', `<button class="text-button edit-task-button" data-force-edit="${input.dataset.progressItem}" data-stream-id="${input.dataset.streamId}" data-project-id="${input.dataset.projectId}">แก้ไข</button>`);
-    });
-    $qa('[data-force-edit]').forEach(btn => btn.onclick = () => openEdit(btn.dataset.projectId, btn.dataset.streamId, btn.dataset.forceEdit));
   }
 
   function hookDetail(){

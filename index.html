@@ -10,7 +10,7 @@
   <link rel="stylesheet" href="styles.css?v=20260619-7">
   <link rel="stylesheet" href="planning.css?v=20260619-7">
   <link rel="stylesheet" href="auth.css?v=20260620-2">
-  <link rel="stylesheet" href="ui-polish.css?v=20260620-3">
+  <link rel="stylesheet" href="ui-polish.css?v=20260620-4">
 </head>
 <body>
   <div class="app-shell">
@@ -96,10 +96,10 @@
   <div class="modal-backdrop" id="planningModal" aria-hidden="true"><div class="modal wide-modal"><div class="modal-head"><div><span class="eyebrow">WORK BREAKDOWN SETUP</span><h2>กำหนดงานและการติดตาม</h2></div><button class="close-planning">×</button></div><form id="planningForm"><div class="form-row"><label>โปรเจกต์<select id="planProject" required></select></label><label>ประเภทงาน<select id="planType"><option value="workstream">งานหลักภายใต้โปรเจกต์</option><option value="checklist">รายละเอียด / Checklist</option></select></label></div><label id="parentField" class="hidden">อยู่ภายใต้งานหลัก<select id="planParent"></select></label><label>ชื่องาน<input id="planTitle" required placeholder="ระบุชื่องานหรือสิ่งที่ต้องดำเนินการ"></label><div class="form-row three"><label>ผู้รับผิดชอบ<input id="planOwner" required placeholder="ชื่อผู้รับผิดชอบ"></label><label>วันเริ่ม<input id="planStart" type="date" required></label><label>กำหนดเสร็จ<input id="planDue" type="date" required></label></div><div class="form-row"><label>ติดตามครั้งถัดไป<input id="planFollowUp" type="date" required></label><label>ความสำคัญ<select id="planPriority"><option value="high">สูง</option><option value="medium" selected>ปานกลาง</option><option value="low">ต่ำ</option></select></label></div><label>รายละเอียดและสิ่งที่ต้องติดตาม<textarea id="planNote" rows="3" required placeholder="ระบุ Deliverable, ประเด็นรอคำตอบ หรือขั้นตอนถัดไป"></textarea></label><div class="modal-actions"><button type="button" class="secondary close-planning">ยกเลิก</button><button type="submit" class="primary">บันทึกและสร้าง Timeline</button></div></form></div></div>
 
   <script src="app.js?v=20260620-2"></script>
-  <script src="planning.js?v=20260620-3"></script>
-  <script src="fixes.js?v=20260620-3"></script>
+  <script src="planning.js?v=20260620-4"></script>
+  <script src="fixes.js?v=20260620-4"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="supabase-config.js?v=20260619-1"></script>
-  <script src="supabase-sync.js?v=20260620-3"></script>
+  <script src="supabase-sync.js?v=20260620-4"></script>
 </body>
 </html>
