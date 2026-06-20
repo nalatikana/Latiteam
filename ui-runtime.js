@@ -96,6 +96,10 @@
     });
     const meetingButton = document.querySelector('[data-add-project-meeting]');
     if (meetingButton && !meetingButton.querySelector('svg')) meetingButton.innerHTML = `${plusIcon}<span>เพิ่มประชุม / นัดหมาย</span>`;
+    const projectEditForm = document.querySelector('#projectEditForm');
+    if (projectEditForm) projectEditForm.onsubmit = saveProjectEditReliably;
+    const standaloneForm = document.querySelector('#standaloneEventForm');
+    if (standaloneForm) standaloneForm.onsubmit = saveEventReliably;
   }
 
   function orderedProject(projectId) {
@@ -140,6 +144,8 @@
     const type = document.querySelector('#planType').value;
     const file = document.querySelector('#planFile')?.files[0];
     if (!project) return showToast('ไม่พบโปรเจกต์ที่เลือก');
+    const previousWorkstreams = structuredClone(project.workstreams || []);
+    const originalButtonText = button.textContent;
     const record = {
       id: uid(type),
       title: document.querySelector('#planTitle').value.trim(),
@@ -155,6 +161,7 @@
       storagePath: ''
     };
     button.disabled = true;
+    button.textContent = 'กำลังบันทึก...';
     try {
       if (file && window.LatiteamSupabase) {
         const attachment = await window.LatiteamSupabase.uploadFile(file, project.id);
@@ -176,31 +183,290 @@
       }
       recalculateAll();
       save();
+      if (!window.LatiteamSupabase?.saveProject) throw new Error('ยังไม่พบตัวเชื่อมต่อ Supabase กรุณารีเฟรชหน้าแล้วลองใหม่');
+      await window.LatiteamSupabase.saveProject(project);
       closePlanning();
       event.target.reset();
       renderAll();
       showDetail(project.id);
       showToast(`เพิ่ม${type === 'workstream' ? 'งานหลัก' : 'รายละเอียด'}ลำดับ ${record.order || Number(document.querySelector('#planOrder')?.value || 1)} แล้ว`);
     } catch (error) {
+      project.workstreams = previousWorkstreams;
+      recalculateAll();
+      save();
       showToast(error.message);
     } finally {
       button.disabled = false;
+      button.textContent = originalButtonText;
     }
   }
 
-  function moveWorkstream(projectId, workstreamId, targetPosition) {
+  async function moveWorkstream(projectId, workstreamId, targetPosition) {
     const project = orderedProject(projectId);
     const from = project?.workstreams.findIndex(workstream => workstream.id === workstreamId) ?? -1;
     if (!project || from < 0) return;
     const to = Math.max(0, Math.min(project.workstreams.length - 1, Number(targetPosition) - 1));
     if (from === to) return;
+    const previousWorkstreams = structuredClone(project.workstreams);
     const [workstream] = project.workstreams.splice(from, 1);
     project.workstreams.splice(to, 0, workstream);
     normalizeWorkstreamOrder(project);
     recalculateAll();
     save();
     showDetail(projectId);
-    showToast(`ย้ายเป็นงานหลักลำดับ ${to + 1} แล้ว`);
+    try {
+      if (!window.LatiteamSupabase?.saveProject) throw new Error('ยังไม่พบตัวเชื่อมต่อ Supabase');
+      await window.LatiteamSupabase.saveProject(project);
+      showToast(`ย้ายเป็นงานหลักลำดับ ${to + 1} และบันทึกแล้ว`);
+    } catch (error) {
+      project.workstreams = previousWorkstreams;
+      normalizeWorkstreamOrder(project);
+      recalculateAll();
+      save();
+      showDetail(projectId);
+      showToast(`บันทึกลำดับไม่สำเร็จ: ${error.message}`);
+    }
+  }
+
+  async function saveProjectEditReliably(event) {
+    event.preventDefault();
+    const button = event.submitter || event.target.querySelector('[type="submit"]');
+    const project = orderedProject(document.querySelector('#editProjectId').value);
+    if (!project) return;
+    const snapshot = structuredClone({name:project.name,desc:project.desc,company:project.company,client:project.client,manager:project.manager,team:project.team,startDate:project.startDate,deadline:project.deadline,status:project.status});
+    const originalText = button.textContent;
+    button.disabled = true;
+    button.textContent = 'กำลังบันทึก...';
+    try {
+      project.name = document.querySelector('#editProjectName').value.trim();
+      project.desc = document.querySelector('#editProjectDesc').value.trim();
+      project.company = document.querySelector('#editProjectCompany').value.trim();
+      project.client = document.querySelector('#editProjectClient').value.trim();
+      project.manager = document.querySelector('#editProjectManager').value.trim();
+      project.team = document.querySelector('#editProjectTeam').value.split(',').map(item => item.trim()).filter(Boolean);
+      project.startDate = document.querySelector('#editProjectStart').value;
+      project.deadline = document.querySelector('#editProjectDeadline').value;
+      project.status = document.querySelector('#editProjectStatus').value;
+      save();
+      await window.LatiteamSupabase.saveProject(project);
+      document.querySelector('#projectEditModal').classList.remove('open');
+      projectOptions();
+      renderAll();
+      showDetail(project.id);
+      showToast('บันทึกข้อมูลโปรเจกต์ลง Supabase แล้ว');
+    } catch (error) {
+      Object.assign(project, snapshot);
+      save();
+      showToast(`บันทึกไม่สำเร็จ: ${error.message}`);
+    } finally {
+      button.disabled = false;
+      button.textContent = originalText;
+    }
+  }
+
+  async function saveTaskReliably(event) {
+    event.preventDefault();
+    const button = event.submitter || event.target.querySelector('[type="submit"]');
+    const project = orderedProject(document.querySelector('#editProjectId').value);
+    const stream = project?.workstreams.find(item => item.id === document.querySelector('#editStreamId').value);
+    const item = stream?.items.find(record => record.id === document.querySelector('#editItemId').value);
+    if (!item) return;
+    const snapshot = structuredClone(project.workstreams);
+    const originalText = button.textContent;
+    let updateRecord = null;
+    let projectSaved = false;
+    button.disabled = true;
+    button.textContent = 'กำลังบันทึก...';
+    try {
+      const file = document.querySelector('#editTaskFile')?.files[0];
+      if (file) {
+        const attachment = await window.LatiteamSupabase.uploadFile(file, project.id);
+        item.storagePath = attachment.storagePath;
+        item.fileName = attachment.fileName;
+        item.link = attachment.signedUrl;
+      } else if (document.querySelector('#editTaskLink')) item.link = document.querySelector('#editTaskLink').value.trim();
+      const from = Number(item.progress || 0);
+      delete stream.reportedProgress;
+      item.title = document.querySelector('#editTaskTitle').value.trim();
+      item.note = document.querySelector('#editTaskNote').value.trim();
+      item.owner = document.querySelector('#editTaskOwner').value;
+      item.due = document.querySelector('#editTaskDue').value;
+      item.followUp = document.querySelector('#editTaskFollow').value;
+      item.progress = Math.max(0, Math.min(100, Number(document.querySelector('#editTaskProgress').value)));
+      item.priority = document.querySelector('#editTaskPriority').value;
+      updateRecord = {date:new Date().toISOString(),project:project.id,task:item.title,from,to:item.progress,note:'แก้ไขรายละเอียดงานและผู้รับผิดชอบ',user:document.querySelector('#cloudUserLabel')?.textContent || 'ผู้ใช้งาน'};
+      updates.unshift(updateRecord);
+      recalculateAll();
+      save();
+      await window.LatiteamSupabase.saveProject(project);
+      projectSaved = true;
+      await window.LatiteamSupabase.saveUpdate(updateRecord);
+      document.querySelector('#editTaskModal').classList.remove('open');
+      renderAll();
+      showDetail(project.id);
+      showToast('บันทึกงานลง Supabase แล้ว');
+    } catch (error) {
+      if (!projectSaved) {
+        project.workstreams = snapshot;
+        if (updateRecord) updates = updates.filter(record => record !== updateRecord);
+        recalculateAll();
+        save();
+        showToast(`บันทึกไม่สำเร็จ: ${error.message}`);
+      } else {
+        document.querySelector('#editTaskModal').classList.remove('open');
+        renderAll();
+        showDetail(project.id);
+        showToast(`บันทึกงานแล้ว แต่บันทึกประวัติไม่สำเร็จ: ${error.message}`);
+      }
+    } finally {
+      button.disabled = false;
+      button.textContent = originalText;
+    }
+  }
+
+  async function saveProgressReliably(event) {
+    event.preventDefault();
+    const button = event.submitter || event.target.querySelector('[type="submit"]');
+    const project = orderedProject(document.querySelector('#updateProject').value);
+    if (!project) return;
+    const snapshot = structuredClone({tasks:project.tasks,progress:project.progress,status:project.status});
+    const originalText = button.textContent;
+    let updateRecord = null;
+    let projectSaved = false;
+    button.disabled = true;
+    button.textContent = 'กำลังบันทึก...';
+    try {
+      const task = document.querySelector('#updateTask').value.trim();
+      const to = Number(document.querySelector('#updateProgress').value);
+      const existing = project.tasks.find(item => item[0] === task);
+      const from = existing ? existing[1] : project.progress;
+      const file = document.querySelector('#updateFile')?.files[0];
+      const attachment = file ? await window.LatiteamSupabase.uploadFile(file, project.id) : {};
+      if (existing) existing[1] = to; else project.tasks.push([task, to, document.querySelector('#cloudUserLabel')?.textContent || 'ผู้ใช้งาน']);
+      project.progress = Math.round(project.tasks.reduce((sum, item) => sum + item[1], 0) / (project.tasks.length || 1));
+      project.status = document.querySelector('#updateStatus').value;
+      updateRecord = {date:new Date().toISOString(),project:project.id,task,from,to,note:document.querySelector('#updateNote').value.trim(),user:document.querySelector('#cloudUserLabel')?.textContent || 'ผู้ใช้งาน',link:document.querySelector('#updateLink')?.value.trim() || attachment.signedUrl || '',fileName:attachment.fileName || '',storagePath:attachment.storagePath || ''};
+      updates.unshift(updateRecord);
+      save();
+      await window.LatiteamSupabase.saveProject(project);
+      projectSaved = true;
+      await window.LatiteamSupabase.saveUpdate(updateRecord);
+      renderAll();
+      closeUpdate();
+      event.target.reset();
+      showToast('บันทึกความคืบหน้าลง Supabase แล้ว');
+    } catch (error) {
+      if (!projectSaved) {
+        Object.assign(project, snapshot);
+        if (updateRecord) updates = updates.filter(record => record !== updateRecord);
+        save();
+        showToast(`บันทึกไม่สำเร็จ: ${error.message}`);
+      } else {
+        renderAll();
+        closeUpdate();
+        showToast(`บันทึก Progress แล้ว แต่บันทึกประวัติไม่สำเร็จ: ${error.message}`);
+      }
+    } finally {
+      button.disabled = false;
+      button.textContent = originalText;
+    }
+  }
+
+  async function saveEventReliably(event) {
+    event.preventDefault();
+    const button = event.submitter || event.target.querySelector('[type="submit"]');
+    const originalText = button.textContent;
+    let record = null;
+    button.disabled = true;
+    button.textContent = 'กำลังบันทึก...';
+    try {
+      const projectId = document.querySelector('#standaloneProject').value;
+      const file = document.querySelector('#standaloneFile').files[0];
+      const attachment = file ? await window.LatiteamSupabase.uploadFile(file, projectId || 'general') : {};
+      record = {id:uid('event'),title:document.querySelector('#standaloneTitle').value.trim(),date:document.querySelector('#standaloneDate').value,time:document.querySelector('#standaloneTime').value,owner:document.querySelector('#standaloneOwner').value.trim(),type:projectId?document.querySelector('#standaloneType').value:'general',projectId,note:document.querySelector('#standaloneNote').value.trim(),link:document.querySelector('#standaloneLink').value.trim() || attachment.signedUrl || '',fileName:attachment.fileName || '',storagePath:attachment.storagePath || ''};
+      standaloneEvents.push(record);
+      saveStandaloneEvents();
+      await window.LatiteamSupabase.saveEvent(record);
+      document.querySelector('#standaloneEventModal').classList.remove('open');
+      event.target.reset();
+      document.querySelector('#standaloneDate').value = planningToday;
+      renderAll();
+      showToast('บันทึกนัดหมายลง Supabase แล้ว');
+    } catch (error) {
+      if (record) standaloneEvents = standaloneEvents.filter(item => item !== record);
+      saveStandaloneEvents();
+      showToast(`บันทึกไม่สำเร็จ: ${error.message}`);
+    } finally {
+      button.disabled = false;
+      button.textContent = originalText;
+    }
+  }
+
+  async function persistInlineProgress(target, toggle = false) {
+    const project = orderedProject(target.dataset.projectId);
+    const stream = project?.workstreams.find(item => item.id === target.dataset.streamId);
+    const itemId = toggle ? target.dataset.toggleItem : target.dataset.progressItem;
+    const item = stream?.items.find(record => record.id === itemId);
+    if (!item) return;
+    const snapshot = structuredClone(project.workstreams);
+    try {
+      delete stream.reportedProgress;
+      item.progress = toggle ? (item.progress === 100 ? 0 : 100) : Math.max(0, Math.min(100, Number(target.value)));
+      recalculateAll();
+      save();
+      showDetail(project.id);
+      await window.LatiteamSupabase.saveProject(project);
+      showToast('บันทึก Progress ลง Supabase แล้ว');
+    } catch (error) {
+      project.workstreams = snapshot;
+      recalculateAll();
+      save();
+      showDetail(project.id);
+      showToast(`บันทึกไม่สำเร็จ: ${error.message}`);
+    }
+  }
+
+  async function createProjectReliably(event) {
+    event.preventDefault();
+    const button = event.submitter || event.target.querySelector('[type="submit"]');
+    const name = document.querySelector('#newProjectName').value.trim();
+    const projectId = slugifyProject(name);
+    if (projects.some(project => project.id === projectId)) return showToast('มีโปรเจกต์ชื่อนี้แล้ว กรุณาใช้ชื่ออื่น');
+    const templateKey = document.querySelector('#newProjectTemplate').value;
+    const start = document.querySelector('#newProjectStart').value;
+    const manager = document.querySelector('#newProjectManager').value.trim();
+    const project = {id:projectId,name,company:document.querySelector('#newProjectCompany').value.trim(),client:document.querySelector('#newProjectClient').value.trim(),desc:document.querySelector('#newProjectDesc').value.trim() || projectTemplateCatalog[templateKey].desc,progress:0,status:'active',deadline:document.querySelector('#newProjectDeadline').value,value:Number(document.querySelector('#newProjectValue').value || 0),cost:Number(document.querySelector('#newProjectCost').value || 0),wht:Number(document.querySelector('#newProjectWht').value || 3),paid:'รอบันทึกสถานะชำระเงิน',color:['#315bea','#19a8b8','#8a5cf6','#38c58b','#ff9f43'][projects.length % 5],manager,team:[manager.slice(0,2) || 'PM'],tasks:[],permissions:{view:['admin','executive','manager','accounting'],finance:['admin','accounting'],edit:['admin','manager']}};
+    project.workstreams = makeTemplateWorkstreams(templateKey, start, manager);
+    project.meetings = makeTemplateMeetings(project, start);
+    normalizeWorkstreamOrder(project);
+    const originalText = button.textContent;
+    let projectSaved = false;
+    button.disabled = true;
+    button.textContent = 'กำลังสร้างโปรเจกต์...';
+    projects.push(project);
+    recalculateAll();
+    save();
+    try {
+      await window.LatiteamSupabase.saveProject(project);
+      projectSaved = true;
+      await window.LatiteamSupabase.saveFinance(project);
+      closeTemplateModal();
+      event.target.reset();
+      document.querySelector('#newProjectStart').value = planningToday;
+      document.querySelector('#newProjectDeadline').value = addDays(planningToday, 30);
+      projectOptions();
+      renderAll();
+      showDetail(project.id);
+      showToast('สร้างโปรเจกต์และบันทึกลง Supabase แล้ว');
+    } catch (error) {
+      if (!projectSaved) projects = projects.filter(item => item !== project);
+      save();
+      renderAll();
+      showToast(`${projectSaved ? 'สร้างโปรเจกต์แล้ว แต่ข้อมูลการเงินยังไม่สำเร็จ' : 'สร้างโปรเจกต์ไม่สำเร็จ'}: ${error.message}`);
+    } finally {
+      button.disabled = false;
+      button.textContent = originalText;
+    }
   }
 
   function renderWorkstreamOrderControls(projectId) {
@@ -225,6 +491,9 @@
   ensurePlanOrderField();
   const planningForm = document.querySelector('#planningForm');
   if (planningForm) planningForm.onsubmit = saveOrderedPlanning;
+  createProjectFromTemplate = createProjectReliably;
+  const templateForm = document.querySelector('#projectTemplateForm');
+  if (templateForm) templateForm.onsubmit = createProjectReliably;
   const planType = document.querySelector('#planType');
   if (planType) {
     const previousTypeChange = planType.onchange;
@@ -235,6 +504,29 @@
     const previousProjectChange = planProject.onchange;
     planProject.onchange = event => { previousProjectChange?.(event); updatePlanOrderDefault(); };
   }
+  saveProjectEdit = saveProjectEditReliably;
+  saveEditedTaskWithAttachment = saveTaskReliably;
+  saveStandaloneEvent = saveEventReliably;
+  const updateForm = document.querySelector('#updateForm');
+  if (updateForm) updateForm.onsubmit = saveProgressReliably;
+  const existingProjectEditForm = document.querySelector('#projectEditForm');
+  if (existingProjectEditForm) existingProjectEditForm.onsubmit = saveProjectEditReliably;
+  const existingStandaloneForm = document.querySelector('#standaloneEventForm');
+  if (existingStandaloneForm) existingStandaloneForm.onsubmit = saveEventReliably;
+  document.addEventListener('click', event => {
+    const toggle = event.target.closest('[data-toggle-item]');
+    if (!toggle) return;
+    event.preventDefault();
+    event.stopImmediatePropagation();
+    persistInlineProgress(toggle, true);
+  }, true);
+  document.addEventListener('change', event => {
+    const progress = event.target.closest('[data-progress-item]');
+    if (!progress) return;
+    event.preventDefault();
+    event.stopImmediatePropagation();
+    persistInlineProgress(progress, false);
+  }, true);
   document.addEventListener('click', event => {
     const addMain = event.target.closest('[data-open-planning]');
     const addDetail = event.target.closest('[data-add-checklist]');
