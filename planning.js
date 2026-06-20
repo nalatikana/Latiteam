@@ -595,10 +595,16 @@ function billingStateLabel(item){
   const state=billingState(item);
   return state==='collected'?'เก็บแล้ว':state==='overdue'?'เลยกำหนด':state==='due-soon'?'ใกล้ครบกำหนด':'รอเก็บ';
 }
+function billingGross(item,project){const rate=Number(item.whtRate??project?.wht??0);return Number(item.grossAmount??(Number(item.amount||0)/(1-rate/100)||0))}
+function billingWhtAmount(item,project){return Number(item.whtAmount??billingGross(item,project)*Number(item.whtRate??project?.wht??0)/100)}
+function billingNet(item,project){return Number(item.netAmount??item.amount??Math.max(0,billingGross(item,project)-billingWhtAmount(item,project)))}
+function updateBillingCalculation(){const gross=Number($('#billingGrossAmount')?.value||0),rate=Number($('#billingWhtRate')?.value||0),wht=gross*rate/100,net=Math.max(0,gross-wht);if($('#billingWhtAmount'))$('#billingWhtAmount').value=wht.toFixed(2);if($('#billingNetAmount'))$('#billingNetAmount').value=net.toFixed(2)}
 function installBillingEditor(){
   if($('#billingScheduleModal'))return;
-  document.body.insertAdjacentHTML('beforeend',`<div class="modal-backdrop" id="billingScheduleModal"><div class="modal wide-modal"><div class="modal-head"><div><span class="eyebrow">BILLING SCHEDULE</span><h2>กำหนดงวดเรียกเก็บ</h2></div><button type="button" class="close-billing-schedule">×</button></div><form id="billingScheduleForm"><div class="form-row"><label>โปรเจค<select id="billingProject" required></select></label><label>ชื่องวด<input id="billingName" required placeholder="เช่น งวดที่ 1 หลังส่งมอบ Requirement"></label></div><div class="form-row three"><label>จำนวนเงินสุทธิที่ต้องเก็บ<input id="billingAmount" type="number" min="0.01" step="0.01" required></label><label>วันครบกำหนด<input id="billingDueDate" type="date" required></label><label>สถานะ<select id="billingStatus"><option value="pending">รอเก็บ</option><option value="collected">เก็บแล้ว</option></select></label></div><label>หมายเหตุ / เงื่อนไขการวางบิล<textarea id="billingNote" rows="3" placeholder="เอกสารที่ต้องใช้ เงื่อนไข หรือผู้ติดต่อ"></textarea></label><div class="modal-actions"><button type="button" class="secondary close-billing-schedule">ยกเลิก</button><button class="primary" type="submit">บันทึกงวด</button></div></form></div></div>`);
+  document.body.insertAdjacentHTML('beforeend',`<div class="modal-backdrop" id="billingScheduleModal"><div class="modal wide-modal"><div class="modal-head"><div><span class="eyebrow">BILLING & WITHHOLDING TAX</span><h2>กำหนดงวดเรียกเก็บ</h2></div><button type="button" class="close-billing-schedule">×</button></div><form id="billingScheduleForm"><div class="form-row"><label>โปรเจค<select id="billingProject" required></select></label><label>ชื่องวด<input id="billingName" required placeholder="เช่น งวดที่ 1 หลังส่งมอบ Requirement"></label></div><div class="form-row three"><label>ยอดเต็มก่อนหัก<input id="billingGrossAmount" type="number" min="0.01" step="0.01" required></label><label>หัก ณ ที่จ่าย (%)<input id="billingWhtRate" type="number" min="0" max="100" step="0.01" required></label><label>ยอดหัก ณ ที่จ่าย<input id="billingWhtAmount" type="number" readonly></label></div><div class="form-row three"><label>ยอดรับสุทธิ<input id="billingNetAmount" type="number" readonly></label><label>วันครบกำหนด<input id="billingDueDate" type="date" required></label><label>สถานะรับเงิน<select id="billingStatus"><option value="pending">รอเก็บ</option><option value="collected">เก็บแล้ว</option></select></label></div><div class="form-row three"><label>สถานะหนังสือรับรอง<select id="billingCertificateStatus"><option value="pending">รอหนังสือรับรอง</option><option value="received">ได้รับแล้ว / พร้อมยื่นภาษี</option><option value="not_required">ไม่ต้องใช้</option></select></label><label>เลขที่หนังสือรับรอง<input id="billingCertificateNo"></label><label>วันที่ได้รับเอกสาร<input id="billingCertificateDate" type="date"></label></div><div class="form-row"><label>แนบหนังสือรับรองหัก ณ ที่จ่าย<input id="billingCertificateFile" type="file" accept="image/jpeg,image/png,image/webp,application/pdf"><small>รองรับ PDF และรูปภาพไม่เกิน 20 MB</small></label><div id="billingCurrentCertificate" class="current-document"></div></div><label>หมายเหตุ / เงื่อนไขการวางบิล<textarea id="billingNote" rows="3" placeholder="เอกสารที่ต้องใช้ เงื่อนไข หรือผู้ติดต่อ"></textarea></label><div class="modal-actions"><button type="button" class="secondary close-billing-schedule">ยกเลิก</button><button class="primary" type="submit">บันทึกงวด</button></div></form></div></div>`);
   $$('.close-billing-schedule').forEach(button=>button.onclick=()=>$('#billingScheduleModal').classList.remove('open'));
+  ['billingGrossAmount','billingWhtRate'].forEach(id=>$('#'+id).oninput=updateBillingCalculation);
+  $('#billingProject').onchange=()=>{const project=projects.find(item=>item.id===$('#billingProject').value);$('#billingWhtRate').value=Number(project?.wht||0);updateBillingCalculation()};
   $('#billingScheduleForm').onsubmit=saveBillingSchedule;
 }
 function openBillingSchedule(id='',projectId=''){
@@ -609,23 +615,30 @@ function openBillingSchedule(id='',projectId=''){
   $('#billingProject').value=row?.project.id||projectId||allowed[0]?.id||'';
   $('#billingProject').disabled=Boolean(row);
   $('#billingName').value=row?.name||'';
-  $('#billingAmount').value=row?.amount||'';
+  const project=row?.project||projects.find(item=>item.id===$('#billingProject').value),gross=row?billingGross(row,project):0;
+  $('#billingGrossAmount').value=gross||'';
+  $('#billingWhtRate').value=Number(row?.whtRate??project?.wht??0);
   $('#billingDueDate').value=row?.dueDate||new Date().toISOString().slice(0,10);
   $('#billingStatus').value=row?.status||'pending';
+  $('#billingCertificateStatus').value=row?.certificateStatus||(Number($('#billingWhtRate').value)>0?'pending':'not_required');
+  $('#billingCertificateNo').value=row?.certificateNo||'';
+  $('#billingCertificateDate').value=row?.certificateDate||'';
+  $('#billingCertificateFile').value='';
+  $('#billingCurrentCertificate').innerHTML=row?.certificateUrl?`<a href="${row.certificateUrl}" target="_blank" rel="noopener">เปิดหนังสือรับรอง: ${row.certificateFileName||'เอกสารหัก ณ ที่จ่าย'}</a>`:'';
   $('#billingNote').value=row?.note||'';
+  updateBillingCalculation();
   $('#billingScheduleModal h2').textContent=row?'แก้ไขงวดเรียกเก็บ':'กำหนดงวดเรียกเก็บ';
   $('#billingScheduleModal').classList.add('open');
 }
 async function saveBillingSchedule(event){
   event.preventDefault();
-  const button=event.submitter,project=projects.find(item=>item.id===$('#billingProject').value);
+  const button=event.submitter,project=projects.find(item=>item.id===$('#billingProject').value),existing=billingRows().find(item=>item.id===editingBillingId),file=$('#billingCertificateFile').files[0];
   if(!project)return;
   project.billingSchedule=Array.isArray(project.billingSchedule)?project.billingSchedule:[];
-  const item={id:editingBillingId||uid('billing'),name:$('#billingName').value.trim(),amount:Number($('#billingAmount').value),dueDate:$('#billingDueDate').value,status:$('#billingStatus').value,note:$('#billingNote').value.trim()};
+  const grossAmount=Number($('#billingGrossAmount').value),whtRate=Number($('#billingWhtRate').value),whtAmount=grossAmount*whtRate/100,netAmount=Math.max(0,grossAmount-whtAmount),item={id:editingBillingId||uid('billing'),name:$('#billingName').value.trim(),grossAmount,whtRate,whtAmount,netAmount,amount:netAmount,dueDate:$('#billingDueDate').value,status:$('#billingStatus').value,certificateStatus:whtRate>0?$('#billingCertificateStatus').value:'not_required',certificateNo:$('#billingCertificateNo').value.trim(),certificateDate:$('#billingCertificateDate').value,certificateStoragePath:existing?.certificateStoragePath||'',certificateFileName:existing?.certificateFileName||'',certificateUrl:existing?.certificateUrl||'',note:$('#billingNote').value.trim()};
   const index=project.billingSchedule.findIndex(value=>value.id===item.id);
-  if(index>=0)project.billingSchedule[index]=item;else project.billingSchedule.push(item);
   button.disabled=true;
-  try{await window.LatiteamSupabase.saveFinance(project);$('#billingScheduleModal').classList.remove('open');editingBillingId='';renderAll();showToast('บันทึกงวดเรียกเก็บแล้ว')}catch(error){showToast(error.message)}finally{button.disabled=false}
+  try{if(whtRate>0&&item.certificateStatus==='received'&&!file&&!item.certificateStoragePath)throw new Error('กรุณาแนบหนังสือรับรองหัก ณ ที่จ่ายก่อนเลือกสถานะได้รับแล้ว');if(file){const uploaded=await window.LatiteamSupabase.uploadAccountingDocument(file,project.id);item.certificateStoragePath=uploaded.storagePath;item.certificateFileName=uploaded.fileName;item.certificateUrl=uploaded.documentUrl;item.certificateStatus='received';if(!item.certificateDate)item.certificateDate=new Date().toISOString().slice(0,10)}if(index>=0)project.billingSchedule[index]=item;else project.billingSchedule.push(item);await window.LatiteamSupabase.saveFinance(project);$('#billingScheduleModal').classList.remove('open');editingBillingId='';renderAll();showToast('บันทึกงวดและเอกสารหัก ณ ที่จ่ายแล้ว')}catch(error){showToast(error.message)}finally{button.disabled=false}
 }
 async function deleteBillingSchedule(id){
   const row=billingRows().find(item=>item.id===id);if(!row||!confirm(`ลบ ${row.name} ใช่หรือไม่`))return;
@@ -634,22 +647,31 @@ async function deleteBillingSchedule(id){
 }
 function renderBillingSchedule(){
   let panel=$('#billingSchedulePanel');
-  if(!panel){$('#financeView .table-panel')?.insertAdjacentHTML('afterend',`<section class="panel finance-ledger-panel" id="billingSchedulePanel"><div class="panel-head"><div><span class="eyebrow">BILLING SCHEDULE</span><h3>กำหนดงวดและติดตามการเรียกเก็บ</h3><p>ระบบแจ้งเตือนก่อนครบกำหนด 7 วัน และแจ้งต่อเนื่องเมื่อเลยกำหนด</p></div><button class="primary" id="addBillingSchedule" type="button">+ เพิ่มงวดเรียกเก็บ</button></div><div class="table-wrap"><table><thead><tr><th>ครบกำหนด</th><th>โปรเจค / งวด</th><th>จำนวนเงินสุทธิ</th><th>สถานะ</th><th>หมายเหตุ</th><th>จัดการ</th></tr></thead><tbody id="billingScheduleRows"></tbody></table></div></section>`);panel=$('#billingSchedulePanel')}
+  if(!panel){$('#financeView .table-panel')?.insertAdjacentHTML('afterend',`<section class="panel finance-ledger-panel" id="billingSchedulePanel"><div class="panel-head"><div><span class="eyebrow">BILLING & WITHHOLDING TAX</span><h3>งวดเรียกเก็บและหนังสือรับรองหัก ณ ที่จ่าย</h3><p>ติดตามยอดเต็ม ยอดหัก ยอดรับสุทธิ และเอกสารสำหรับยื่นภาษี</p></div><button class="primary" id="addBillingSchedule" type="button">+ เพิ่มงวดเรียกเก็บ</button></div><div class="billing-tax-summary" id="billingTaxSummary"></div><div class="table-wrap"><table><thead><tr><th>ครบกำหนด / งวด</th><th>ยอดเต็ม</th><th>หัก ณ ที่จ่าย</th><th>รับสุทธิ</th><th>รับเงิน</th><th>หนังสือรับรอง / ยื่นภาษี</th><th>จัดการ</th></tr></thead><tbody id="billingScheduleRows"></tbody></table></div></section>`);panel=$('#billingSchedulePanel')}
+  if(!$('#exportWhtCertificates'))$('#addBillingSchedule').insertAdjacentHTML('beforebegin','<button class="secondary" id="exportWhtCertificates" type="button">Export ภาษีหักฯ</button>');
+  $('#exportWhtCertificates').onclick=exportWhtCertificates;
   const editableIds=new Set(editableFinanceProjects().map(project=>project.id));
   $('#addBillingSchedule').hidden=editableIds.size===0;
   $('#addBillingSchedule').onclick=()=>openBillingSchedule();
   const rows=billingRows().sort((a,b)=>(a.dueDate||'').localeCompare(b.dueDate||''));
-  $('#billingScheduleRows').innerHTML=rows.map(item=>`<tr><td>${dateTH(item.dueDate)}</td><td><b>${item.project.name}</b><small>${item.name}</small></td><td>${money(item.amount)}</td><td><span class="status-badge ${billingState(item)==='collected'?'done':billingState(item)==='overdue'?'risk':'active'}">${billingStateLabel(item)}</span></td><td>${item.note||'-'}</td><td>${editableIds.has(item.project.id)?`<div class="ledger-actions"><button type="button" data-edit-billing="${item.id}">แก้ไข</button><button type="button" class="delete" data-delete-billing="${item.id}">ลบ</button></div>`:'ดูอย่างเดียว'}</td></tr>`).join('')||'<tr><td colspan="6" class="empty-state">ยังไม่ได้กำหนดงวดเรียกเก็บ</td></tr>';
+  const totalWht=rows.reduce((sum,item)=>sum+billingWhtAmount(item,item.project),0),readyWht=rows.filter(item=>item.certificateStatus==='received').reduce((sum,item)=>sum+billingWhtAmount(item,item.project),0),pendingWht=rows.filter(item=>item.certificateStatus!=='received'&&item.certificateStatus!=='not_required').reduce((sum,item)=>sum+billingWhtAmount(item,item.project),0);
+  $('#billingTaxSummary').innerHTML=`<div><small>ยอดหัก ณ ที่จ่ายทั้งหมด</small><b>${money(totalWht)}</b></div><div><small>ได้รับเอกสาร / พร้อมยื่นภาษี</small><b>${money(readyWht)}</b></div><div><small>รอหนังสือรับรอง</small><b>${money(pendingWht)}</b></div>`;
+  $('#billingScheduleRows').innerHTML=rows.map(item=>{const certificate=item.certificateStatus==='received'?`<span class="status-badge done">พร้อมยื่น ${money(billingWhtAmount(item,item.project))}</span>${item.certificateNo?`<small>เลขที่ ${item.certificateNo}</small>`:''}${item.certificateUrl?`<a class="document-link" href="${item.certificateUrl}" target="_blank" rel="noopener">${item.certificateFileName||'เปิดหนังสือรับรอง'}</a>`:''}`:item.certificateStatus==='not_required'?'<span class="status-badge">ไม่ต้องใช้</span>':`<span class="status-badge risk">รอเอกสาร ${money(billingWhtAmount(item,item.project))}</span>`;return`<tr><td>${dateTH(item.dueDate)}<small>${item.project.name} · ${item.name}</small></td><td>${money(billingGross(item,item.project))}</td><td>${Number(item.whtRate??item.project.wht??0)}%<small>${money(billingWhtAmount(item,item.project))}</small></td><td><b>${money(billingNet(item,item.project))}</b></td><td><span class="status-badge ${billingState(item)==='collected'?'done':billingState(item)==='overdue'?'risk':'active'}">${billingStateLabel(item)}</span></td><td>${certificate}</td><td>${editableIds.has(item.project.id)?`<div class="ledger-actions"><button type="button" data-edit-billing="${item.id}">แก้ไข</button><button type="button" class="delete" data-delete-billing="${item.id}">ลบ</button></div>`:'ดูอย่างเดียว'}</td></tr>`}).join('')||'<tr><td colspan="7" class="empty-state">ยังไม่ได้กำหนดงวดเรียกเก็บ</td></tr>';
   $$('[data-edit-billing]').forEach(button=>button.onclick=()=>openBillingSchedule(button.dataset.editBilling));
   $$('[data-delete-billing]').forEach(button=>button.onclick=()=>deleteBillingSchedule(button.dataset.deleteBilling));
+}
+function exportWhtCertificates(){
+  const rows=[['โปรเจค','บริษัทลูกค้า','งวด','วันครบกำหนด','ยอดเต็ม','อัตราหัก ณ ที่จ่าย','ยอดหัก ณ ที่จ่าย','ยอดรับสุทธิ','สถานะรับเงิน','สถานะหนังสือรับรอง','เลขที่หนังสือรับรอง','วันที่ได้รับ','ไฟล์เอกสาร'],...billingRows().map(item=>[item.project.name,item.project.client,item.name,item.dueDate,billingGross(item,item.project),Number(item.whtRate??item.project.wht??0)+'%',billingWhtAmount(item,item.project),billingNet(item,item.project),billingStateLabel(item),item.certificateStatus==='received'?'ได้รับแล้ว / พร้อมยื่น':item.certificateStatus==='not_required'?'ไม่ต้องใช้':'รอเอกสาร',item.certificateNo||'',item.certificateDate||'',item.certificateUrl||''])];
+  const csv='\ufeff'+rows.map(row=>row.map(value=>'"'+String(value??'').replaceAll('"','""')+'"').join(',')).join('\n'),link=document.createElement('a');link.href=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8'}));link.download=`latiteam-withholding-tax-${new Date().toISOString().slice(0,10)}.csv`;link.click();URL.revokeObjectURL(link.href);showToast('Export รายการภาษีหัก ณ ที่จ่ายแล้ว');
 }
 
 const billingNotificationItems=notificationItems;
 notificationItems=function(){
   const normal=billingNotificationItems();
   const today=new Date().toISOString().slice(0,10);
-  const bills=billingRows().filter(item=>item.status!=='collected'&&dayDiff(item.dueDate,today)<=7).map(item=>({id:`billing|${item.project.id}|${item.id}|${item.dueDate}`,title:`ถึงกำหนดเก็บเงิน: ${item.name} (${money(item.amount)})`,project:item.project.name,date:item.dueDate,owner:'ฝ่ายบัญชี',state:billingState(item)==='overdue'?'overdue':'today'}));
-  return [...bills,...normal];
+  const rows=billingRows(),bills=rows.filter(item=>item.status!=='collected'&&dayDiff(item.dueDate,today)<=7).map(item=>({id:`billing|${item.project.id}|${item.id}|${item.dueDate}`,title:`ถึงกำหนดเก็บเงิน: ${item.name} (${money(billingNet(item,item.project))})`,project:item.project.name,date:item.dueDate,owner:'ฝ่ายบัญชี',state:billingState(item)==='overdue'?'overdue':'today'}));
+  const certificates=rows.filter(item=>item.certificateStatus!=='received'&&item.certificateStatus!=='not_required'&&(item.status==='collected'||dayDiff(item.dueDate,today)<=0)).map(item=>({id:`wht-certificate|${item.project.id}|${item.id}`,title:`ติดตามหนังสือรับรองหัก ณ ที่จ่าย: ${item.name} (${money(billingWhtAmount(item,item.project))})`,project:item.project.name,date:item.dueDate,owner:'ฝ่ายบัญชี',state:'overdue'}));
+  return [...certificates,...bills,...normal];
 };
 
 const billingRenderFinance=renderFinance;
@@ -661,6 +683,8 @@ renderFinance=function(){
   $$('[data-edit-project-finance]').forEach(button=>button.onclick=()=>openFinanceEdit(button.dataset.editProjectFinance));
   $$('[data-add-project-billing]').forEach(button=>button.onclick=()=>openBillingSchedule('',button.dataset.addProjectBilling));
   renderBillingSchedule();
+  const readyWht=billingRows().filter(item=>item.certificateStatus==='received').reduce((sum,item)=>sum+billingWhtAmount(item,item.project),0);
+  if(!$('#financeStats .tax-filing-card'))$('#financeStats').insertAdjacentHTML('beforeend',`<div class="stat-card tax-filing-card" style="--accent:#8a5cf6"><div class="stat-top"><span>ภาษีหักฯ พร้อมยื่น</span><span class="stat-icon stat-icon-tax" aria-hidden="true"></span></div><div class="stat-value">${money(readyWht)}</div></div>`);
 };
 
 const billingRenderAll=renderAll;
