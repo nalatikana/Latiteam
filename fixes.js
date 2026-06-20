@@ -111,7 +111,7 @@
 
   function ensureVersionBadge(){
     if($q('#forceVersionBadge')) return;
-    document.body.insertAdjacentHTML('beforeend', `<div id="forceVersionBadge" style="position:fixed;right:16px;bottom:14px;z-index:9999;background:#132a63;color:#fff;border-radius:999px;padding:8px 12px;font:600 12px Kanit,sans-serif;box-shadow:0 10px 25px rgba(15,35,75,.18)">ระบบอัปเดตแล้ว v20260619-8</div>`);
+    document.body.insertAdjacentHTML('beforeend', `<div id="forceVersionBadge" style="position:fixed;right:16px;bottom:14px;z-index:9999;background:#132a63;color:#fff;border-radius:999px;padding:8px 12px;font:600 12px Kanit,sans-serif;box-shadow:0 10px 25px rgba(15,35,75,.18)">ระบบอัปเดตแล้ว v20260620-3</div>`);
   }
 
   function showEvent(id){

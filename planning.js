@@ -1,6 +1,22 @@
 const planningToday='2026-06-19';
 let agendaFilter='all';
 let activeDetailProject=null;
+const uiFilters={
+  projectStart:'',
+  projectEnd:'',
+  agendaSearch:'',
+  agendaStart:'2026-06-01',
+  agendaEnd:'2026-06-30',
+  agendaProject:'all',
+  agendaOwner:'all',
+  updateSearch:'',
+  updateStart:'',
+  updateEnd:'',
+  financeSearch:'',
+  financeStart:'',
+  financeEnd:''
+};
+const dashboardCalendarRootId='dashboardMonthOverview';
 
 const addDays=(date,days)=>{const d=new Date(date+'T00:00:00');d.setDate(d.getDate()+days);return d.toISOString().slice(0,10)};
 const dayDiff=(a,b)=>a&&b?Math.round((new Date(a+'T00:00:00')-new Date(b+'T00:00:00'))/864e5):0;
@@ -326,21 +342,6 @@ installAgendaProjectFilters();
 installStandaloneTools();
 renderAll();
 
-const dashboardCalendarRootId='dashboardMonthOverview';
-const uiFilters={
-  projectStart:'',
-  projectEnd:'',
-  agendaSearch:'',
-  agendaStart:'2026-06-01',
-  agendaEnd:'2026-06-30',
-  updateSearch:'',
-  updateStart:'',
-  updateEnd:'',
-  financeSearch:'',
-  financeStart:'',
-  financeEnd:''
-};
-
 function filterText(value){return String(value||'').trim().toLowerCase()}
 function inRange(date,start,end){if(!date)return true;const d=date.slice(0,10);return (!start||d>=start)&&(!end||d<=end)}
 function overlapsRange(start,end,filterStart,filterEnd){const a=start||end,b=end||start;if(!filterStart&&!filterEnd)return true;if(filterStart&&b<filterStart)return false;if(filterEnd&&a>filterEnd)return false;return true}
@@ -395,9 +396,17 @@ renderAll();
 
 /* Final interaction layer: formal icons, guaranteed calendars, editable tasks */
 function applyFormalIcons(){
-  const icons={dashboard:'⌂',projects:'▦',updates:'◷',agenda:'☑',finance:'฿',access:'⚙'};
-  $$('#mainNav .nav-item').forEach(n=>{const s=n.querySelector('span');if(s)s.textContent=icons[n.dataset.view]||'□'});
-  const nb=$('#notificationButton');if(nb)nb.childNodes[0].textContent='◇';
+  const paths={
+    dashboard:'<path d="M3 11 12 4l9 7v9H6v-9"/>',
+    projects:'<rect x="4" y="4" width="16" height="16" rx="2"/><path d="M4 10h16M10 4v16"/>',
+    updates:'<circle cx="12" cy="12" r="8"/><path d="M12 7v5l3 2M5 6H2v3"/>',
+    agenda:'<rect x="5" y="4" width="14" height="16" rx="2"/><path d="m8 12 2.5 2.5L16 9"/>',
+    finance:'<circle cx="12" cy="12" r="8"/><path d="M15 8.5c-.7-.6-1.6-1-2.8-1-1.6 0-2.7.8-2.7 2s1 1.8 2.8 2.2c1.8.4 2.7 1 2.7 2.3 0 1.5-1.2 2.5-3 2.5M12 5v14"/>',
+    access:'<circle cx="12" cy="8" r="3"/><path d="M5 20c.5-4 3-6 7-6s6.5 2 7 6"/>'
+  };
+  $$('#mainNav .nav-item').forEach(n=>{const s=n.querySelector('span');if(s)s.innerHTML=`<svg viewBox="0 0 24 24" aria-hidden="true">${paths[n.dataset.view]||paths.projects}</svg>`});
+  $$('.stat-icon').forEach(icon=>{const label=icon.closest('.stat-card')?.querySelector('.stat-top>span:first-child')?.textContent||'';const type=/เงิน|มูลค่า|ค่าใช้จ่าย|กำไร|ภาษี/.test(label)?'finance':/ประชุม/.test(label)?'agenda':/คืบหน้า|ช่วง/.test(label)?'updates':/กำหนด|วันนี้|ดำเนิน/.test(label)?'updates':'projects';icon.classList.add('has-svg');icon.innerHTML=`<svg viewBox="0 0 24 24" aria-hidden="true">${paths[type]}</svg>`});
+  const nb=$('#notificationButton');if(nb&&!nb.querySelector('svg'))nb.insertAdjacentHTML('afterbegin','<svg class="button-svg" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3 6 12l6 9 6-9-6-9Z"/></svg>');
 }
 function ensureDashboardCalendar(){
   if(!$('#dashboardMonthOverview')){
