@@ -1,6 +1,6 @@
 (() => {
   const config = window.LATITEAM_SUPABASE_CONFIG || {};
-  const financeKeys = ['value','monthlyRevenue','billingType','cost','costStatus','wht','whtStatus','paid','received'];
+  const financeKeys = ['value','monthlyRevenue','billingType','billingSchedule','cost','costStatus','wht','whtStatus','paid','received'];
   let db = null;
   let authSession = null;
   let sessionUser = null;

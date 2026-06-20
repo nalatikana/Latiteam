@@ -539,3 +539,131 @@ showDetail=function(id){attachmentDetailRenderer(id);renderProjectRecordAttachme
 planningShowDetail=showDetail;
 const updateAttachmentRenderer=renderUpdates;
 renderUpdates=function(){updateAttachmentRenderer();const allowed=visibleProjectsByPermission().map(project=>project.id),q=filterText(uiFilters.updateSearch),list=updates.filter(item=>allowed.includes(item.project)&&inRange(item.date,uiFilters.updateStart,uiFilters.updateEnd)).filter(item=>{const project=projects.find(value=>value.id===item.project);return !q||[project?.name,project?.client,item.task,item.note,item.user].join(' ').toLowerCase().includes(q)});$$('#updateTable tr').forEach((row,index)=>{const cell=row.children[3],item=list[index];if(cell&&item&&!cell.querySelector('.record-attachment'))cell.insertAdjacentHTML('beforeend',recordAttachmentMarkup(item))})}
+
+/* Cash collection summary: project value is gross, while income entries are actual cash received. */
+function projectWithholding(project){return Number(project.value||0)*Number(project.wht||0)/100}
+function projectNetCollectible(project){return Math.max(0,Number(project.value||0)-projectWithholding(project))}
+function projectCashReceived(project){
+  const rows=financeTransactions.filter(item=>item.projectId===project.id&&item.type==='income');
+  return rows.length?rows.reduce((sum,item)=>sum+Number(item.amount||0),0):Number(project.received||0)
+}
+function projectCashPending(project){return Math.max(0,projectNetCollectible(project)-projectCashReceived(project))}
+
+applyLedgerTotals=function(){
+  projects.forEach(project=>{
+    const rows=financeTransactions.filter(item=>item.projectId===project.id);
+    const received=projectCashReceived(project);
+    const expenses=rows.filter(item=>item.type==='expense');
+    if(expenses.length)project.cost=expenses.reduce((sum,item)=>sum+Number(item.amount||0),0);
+    project.received=received;
+    const pending=projectCashPending(project);
+    project.paid=pending<=0?`เก็บครบแล้ว ${money(received)}`:`เก็บแล้ว ${money(received)} / รอเก็บ ${money(pending)}`;
+  });
+};
+
+renderFinance=function(){
+  const q=filterText(uiFilters.financeSearch);
+  const list=visibleProjectsByPermission().filter(project=>(!q||[project.client,project.name,project.company,project.manager].join(' ').toLowerCase().includes(q))&&overlapsRange((project.workstreams||[])[0]?.start,project.deadline,uiFilters.financeStart,uiFilters.financeEnd));
+  const allowed=list.filter(project=>canSeeFinance(project));
+  const netCollectible=allowed.reduce((sum,project)=>sum+projectNetCollectible(project),0);
+  const received=allowed.reduce((sum,project)=>sum+projectCashReceived(project),0);
+  const pending=allowed.reduce((sum,project)=>sum+projectCashPending(project),0);
+  const expenses=allowed.reduce((sum,project)=>sum+Number(project.cost||0),0);
+  $('#financeStats').innerHTML=[
+    ['ยอดสุทธิที่ต้องเก็บ',money(netCollectible),'money','#315bea'],
+    ['เก็บแล้ว',money(received),'trend','#38c58b'],
+    ['รอเก็บ',money(pending),'tax','#ff9f43'],
+    ['ค่าใช้จ่าย',money(expenses),'cost','#ef5b5b']
+  ].map(item=>`<div class="stat-card" style="--accent:${item[3]}"><div class="stat-top"><span>${item[0]}</span><span class="stat-icon stat-icon-${item[2]}" aria-hidden="true"></span></div><div class="stat-value">${item[1]}</div></div>`).join('');
+  $('#financeTable').innerHTML=list.map(project=>`<tr><td class="finance-name"><b>${project.client}</b><small>${project.name} · ${project.company}</small></td><td>${secureMoney(project,project.value)}</td><td>${secureMoney(project,project.cost)}</td><td>${canSeeFinance(project)?`<span class="delta">${money(projectNetCollectible(project)-Number(project.cost||0))}</span>`:'<span class="money-hidden">ซ่อนตามสิทธิ์</span>'}</td><td>${canSeeFinance(project)?`${Number(project.wht||0)}% (${money(projectWithholding(project))})`:'<span class="money-hidden">ซ่อน</span>'}</td><td><span class="status-badge ${projectCashPending(project)<=0?'done':'active'}">${canSeeFinance(project)?project.paid:'เห็นเฉพาะสถานะงาน'}</span></td></tr>`).join('')||'<tr><td colspan="6">ไม่พบข้อมูลบัญชีตามฟิลเตอร์นี้</td></tr>';
+};
+
+applyLedgerTotals();
+renderFinance();
+
+/* Editable billing installments and due-date reminders. Stored in project_finance JSON. */
+let editingBillingId='';
+function billingRows(){
+  return visibleProjectsByPermission().filter(project=>canSeeFinance(project)).flatMap(project=>(project.billingSchedule||[]).map(item=>({...item,project})));
+}
+function billingState(item){
+  if(item.status==='collected')return'collected';
+  const days=dayDiff(item.dueDate,new Date().toISOString().slice(0,10));
+  return days<0?'overdue':days<=7?'due-soon':'planned';
+}
+function billingStateLabel(item){
+  const state=billingState(item);
+  return state==='collected'?'เก็บแล้ว':state==='overdue'?'เลยกำหนด':state==='due-soon'?'ใกล้ครบกำหนด':'รอเก็บ';
+}
+function installBillingEditor(){
+  if($('#billingScheduleModal'))return;
+  document.body.insertAdjacentHTML('beforeend',`<div class="modal-backdrop" id="billingScheduleModal"><div class="modal wide-modal"><div class="modal-head"><div><span class="eyebrow">BILLING SCHEDULE</span><h2>กำหนดงวดเรียกเก็บ</h2></div><button type="button" class="close-billing-schedule">×</button></div><form id="billingScheduleForm"><div class="form-row"><label>โปรเจค<select id="billingProject" required></select></label><label>ชื่องวด<input id="billingName" required placeholder="เช่น งวดที่ 1 หลังส่งมอบ Requirement"></label></div><div class="form-row three"><label>จำนวนเงินสุทธิที่ต้องเก็บ<input id="billingAmount" type="number" min="0.01" step="0.01" required></label><label>วันครบกำหนด<input id="billingDueDate" type="date" required></label><label>สถานะ<select id="billingStatus"><option value="pending">รอเก็บ</option><option value="collected">เก็บแล้ว</option></select></label></div><label>หมายเหตุ / เงื่อนไขการวางบิล<textarea id="billingNote" rows="3" placeholder="เอกสารที่ต้องใช้ เงื่อนไข หรือผู้ติดต่อ"></textarea></label><div class="modal-actions"><button type="button" class="secondary close-billing-schedule">ยกเลิก</button><button class="primary" type="submit">บันทึกงวด</button></div></form></div></div>`);
+  $$('.close-billing-schedule').forEach(button=>button.onclick=()=>$('#billingScheduleModal').classList.remove('open'));
+  $('#billingScheduleForm').onsubmit=saveBillingSchedule;
+}
+function openBillingSchedule(id='',projectId=''){
+  installBillingEditor();
+  const allowed=editableFinanceProjects(),row=billingRows().find(item=>item.id===id);
+  editingBillingId=id;
+  $('#billingProject').innerHTML=allowed.map(project=>`<option value="${project.id}">${project.name}</option>`).join('');
+  $('#billingProject').value=row?.project.id||projectId||allowed[0]?.id||'';
+  $('#billingProject').disabled=Boolean(row);
+  $('#billingName').value=row?.name||'';
+  $('#billingAmount').value=row?.amount||'';
+  $('#billingDueDate').value=row?.dueDate||new Date().toISOString().slice(0,10);
+  $('#billingStatus').value=row?.status||'pending';
+  $('#billingNote').value=row?.note||'';
+  $('#billingScheduleModal h2').textContent=row?'แก้ไขงวดเรียกเก็บ':'กำหนดงวดเรียกเก็บ';
+  $('#billingScheduleModal').classList.add('open');
+}
+async function saveBillingSchedule(event){
+  event.preventDefault();
+  const button=event.submitter,project=projects.find(item=>item.id===$('#billingProject').value);
+  if(!project)return;
+  project.billingSchedule=Array.isArray(project.billingSchedule)?project.billingSchedule:[];
+  const item={id:editingBillingId||uid('billing'),name:$('#billingName').value.trim(),amount:Number($('#billingAmount').value),dueDate:$('#billingDueDate').value,status:$('#billingStatus').value,note:$('#billingNote').value.trim()};
+  const index=project.billingSchedule.findIndex(value=>value.id===item.id);
+  if(index>=0)project.billingSchedule[index]=item;else project.billingSchedule.push(item);
+  button.disabled=true;
+  try{await window.LatiteamSupabase.saveFinance(project);$('#billingScheduleModal').classList.remove('open');editingBillingId='';renderAll();showToast('บันทึกงวดเรียกเก็บแล้ว')}catch(error){showToast(error.message)}finally{button.disabled=false}
+}
+async function deleteBillingSchedule(id){
+  const row=billingRows().find(item=>item.id===id);if(!row||!confirm(`ลบ ${row.name} ใช่หรือไม่`))return;
+  row.project.billingSchedule=row.project.billingSchedule.filter(item=>item.id!==id);
+  try{await window.LatiteamSupabase.saveFinance(row.project);renderAll();showToast('ลบงวดเรียกเก็บแล้ว')}catch(error){showToast(error.message)}
+}
+function renderBillingSchedule(){
+  let panel=$('#billingSchedulePanel');
+  if(!panel){$('#financeView .table-panel')?.insertAdjacentHTML('afterend',`<section class="panel finance-ledger-panel" id="billingSchedulePanel"><div class="panel-head"><div><span class="eyebrow">BILLING SCHEDULE</span><h3>กำหนดงวดและติดตามการเรียกเก็บ</h3><p>ระบบแจ้งเตือนก่อนครบกำหนด 7 วัน และแจ้งต่อเนื่องเมื่อเลยกำหนด</p></div><button class="primary" id="addBillingSchedule" type="button">+ เพิ่มงวดเรียกเก็บ</button></div><div class="table-wrap"><table><thead><tr><th>ครบกำหนด</th><th>โปรเจค / งวด</th><th>จำนวนเงินสุทธิ</th><th>สถานะ</th><th>หมายเหตุ</th><th>จัดการ</th></tr></thead><tbody id="billingScheduleRows"></tbody></table></div></section>`);panel=$('#billingSchedulePanel')}
+  const editableIds=new Set(editableFinanceProjects().map(project=>project.id));
+  $('#addBillingSchedule').hidden=editableIds.size===0;
+  $('#addBillingSchedule').onclick=()=>openBillingSchedule();
+  const rows=billingRows().sort((a,b)=>(a.dueDate||'').localeCompare(b.dueDate||''));
+  $('#billingScheduleRows').innerHTML=rows.map(item=>`<tr><td>${dateTH(item.dueDate)}</td><td><b>${item.project.name}</b><small>${item.name}</small></td><td>${money(item.amount)}</td><td><span class="status-badge ${billingState(item)==='collected'?'done':billingState(item)==='overdue'?'risk':'active'}">${billingStateLabel(item)}</span></td><td>${item.note||'-'}</td><td>${editableIds.has(item.project.id)?`<div class="ledger-actions"><button type="button" data-edit-billing="${item.id}">แก้ไข</button><button type="button" class="delete" data-delete-billing="${item.id}">ลบ</button></div>`:'ดูอย่างเดียว'}</td></tr>`).join('')||'<tr><td colspan="6" class="empty-state">ยังไม่ได้กำหนดงวดเรียกเก็บ</td></tr>';
+  $$('[data-edit-billing]').forEach(button=>button.onclick=()=>openBillingSchedule(button.dataset.editBilling));
+  $$('[data-delete-billing]').forEach(button=>button.onclick=()=>deleteBillingSchedule(button.dataset.deleteBilling));
+}
+
+const billingNotificationItems=notificationItems;
+notificationItems=function(){
+  const normal=billingNotificationItems();
+  const today=new Date().toISOString().slice(0,10);
+  const bills=billingRows().filter(item=>item.status!=='collected'&&dayDiff(item.dueDate,today)<=7).map(item=>({id:`billing|${item.project.id}|${item.id}|${item.dueDate}`,title:`ถึงกำหนดเก็บเงิน: ${item.name} (${money(item.amount)})`,project:item.project.name,date:item.dueDate,owner:'ฝ่ายบัญชี',state:billingState(item)==='overdue'?'overdue':'today'}));
+  return [...bills,...normal];
+};
+
+const billingRenderFinance=renderFinance;
+renderFinance=function(){
+  billingRenderFinance();
+  const q=filterText(uiFilters.financeSearch),shown=visibleProjectsByPermission().filter(project=>canSeeFinance(project)&&(!q||[project.client,project.name,project.company,project.manager].join(' ').toLowerCase().includes(q))&&overlapsRange((project.workstreams||[])[0]?.start,project.deadline,uiFilters.financeStart,uiFilters.financeEnd));
+  const editableIds=new Set(editableFinanceProjects().map(project=>project.id));
+  $$('#financeTable tr').forEach((row,index)=>{const project=shown[index],cell=row.lastElementChild;if(project&&editableIds.has(project.id)&&cell&&!cell.querySelector('[data-edit-project-finance]'))cell.insertAdjacentHTML('beforeend',`<div class="ledger-actions"><button type="button" data-edit-project-finance="${project.id}">แก้ไข</button><button type="button" data-add-project-billing="${project.id}">เพิ่มงวด</button></div>`)});
+  $$('[data-edit-project-finance]').forEach(button=>button.onclick=()=>openFinanceEdit(button.dataset.editProjectFinance));
+  $$('[data-add-project-billing]').forEach(button=>button.onclick=()=>openBillingSchedule('',button.dataset.addProjectBilling));
+  renderBillingSchedule();
+};
+
+const billingRenderAll=renderAll;
+renderAll=function(){billingRenderAll();renderFinance();renderNotificationCenter()};
+installBillingEditor();
+renderAll();
