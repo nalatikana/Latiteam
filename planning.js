@@ -719,3 +719,50 @@ const profileShowDetail=showDetail;
 showDetail=function(id){profileShowDetail(id);activeDetailProject=id;renderAssignedProfilePhotos()};
 planningShowDetail=showDetail;
 renderAll();
+
+/* Owner selectors are limited to active users who can access the selected project. */
+function eligibleProjectUsers(projectId){
+  const users=selectableProjectUsers();
+  if(!projectId)return users;
+  return users.filter(user=>user.role==='admin'||(user.allowedProjects||[]).includes(projectId));
+}
+function ensureOwnerSelect(id){
+  const node=$('#'+id);if(!node)return null;
+  if(node.tagName==='SELECT')return node;
+  const select=document.createElement('select');select.id=id;select.name=node.name||'';node.replaceWith(select);return select;
+}
+function ownerUserForRecord(projectId,userId,name){return eligibleProjectUsers(projectId).find(user=>user.id===userId)||eligibleProjectUsers(projectId).find(user=>user.name===name)}
+function updateOwnerPreview(select){
+  if(!select)return;let preview=select.parentElement.querySelector('.owner-select-preview');if(!preview){preview=document.createElement('div');preview.className='owner-select-preview';select.insertAdjacentElement('afterend',preview)}
+  const user=projectUserById(select.selectedOptions?.[0]?.dataset.userId);preview.innerHTML=user?`${profileAvatarMarkup(user,'small')}<span>${user.name}</span>`:'<span class="unassigned-owner">ยังไม่ระบุ</span>';
+}
+function populateOwnerSelect(select,projectId,selectedUserId='',selectedName='ยังไม่ระบุ'){
+  if(!select)return;const users=eligibleProjectUsers(projectId),selected=ownerUserForRecord(projectId,selectedUserId,selectedName);
+  select.innerHTML=`<option value="ยังไม่ระบุ" data-user-id="">ยังไม่ระบุ</option>${users.map(user=>`<option value="${user.name}" data-user-id="${user.id}">${user.name} · ${projectRoleLabel(user.role)}</option>`).join('')}`;
+  select.value=selected?.name||'ยังไม่ระบุ';select.onchange=()=>updateOwnerPreview(select);updateOwnerPreview(select);
+}
+function installScopedOwnerSelectors(){
+  const plan=ensureOwnerSelect('planOwner');if(plan){const projectId=$('#planProject')?.value||'';populateOwnerSelect(plan,projectId,plan.selectedOptions?.[0]?.dataset.userId,plan.value);if($('#planProject')&&!$('#planProject').dataset.ownerBound){$('#planProject').dataset.ownerBound='1';$('#planProject').addEventListener('change',()=>populateOwnerSelect($('#planOwner'),$('#planProject').value))}}
+  const standalone=ensureOwnerSelect('standaloneOwner');if(standalone){const projectId=$('#standaloneProject')?.value||'';populateOwnerSelect(standalone,projectId,standalone.selectedOptions?.[0]?.dataset.userId,standalone.value);if($('#standaloneProject')&&!$('#standaloneProject').dataset.ownerBound){$('#standaloneProject').dataset.ownerBound='1';$('#standaloneProject').addEventListener('change',()=>populateOwnerSelect($('#standaloneOwner'),$('#standaloneProject').value))}}
+}
+const scopedOpenEditTask=openEditTask;
+openEditTask=function(projectId,streamId,itemId){scopedOpenEditTask(projectId,streamId,itemId);const project=projects.find(item=>item.id===projectId),stream=project?.workstreams.find(item=>item.id===streamId),record=stream?.items.find(item=>item.id===itemId);populateOwnerSelect($('#editTaskOwner'),projectId,record?.ownerUserId,record?.owner)};
+const scopedInstallStandaloneTools=installStandaloneTools;
+installStandaloneTools=function(){scopedInstallStandaloneTools();installScopedOwnerSelectors()};
+const scopedOpenProjectMeeting=openProjectMeeting;
+openProjectMeeting=function(projectId){scopedOpenProjectMeeting(projectId);populateOwnerSelect($('#standaloneOwner'),projectId)};
+
+function renderScopedOwnerPhotos(projectId){
+  const project=projects.find(item=>item.id===projectId);if(!project)return;
+  (project.workstreams||[]).forEach(stream=>{
+    const streamRoot=$(`[data-workstream="${stream.id}"]`),streamUser=ownerUserForRecord(project.id,stream.ownerUserId,stream.owner),streamTitle=streamRoot?.querySelector('.work-title');
+    if(streamTitle&&streamUser&&!streamTitle.querySelector('.workstream-owner-profile'))streamTitle.insertAdjacentHTML('beforeend',`<div class="workstream-owner-profile">${profileAvatarMarkup(streamUser,'small')}<span>${streamUser.name}</span></div>`);
+    (stream.items||[]).forEach(item=>{const row=$(`[data-progress-item="${item.id}"][data-stream-id="${stream.id}"]`)?.closest('.check-row'),ownerCell=row?.querySelector('.check-owner'),user=ownerUserForRecord(project.id,item.ownerUserId,item.owner);if(ownerCell)ownerCell.innerHTML=user?`${profileAvatarMarkup(user,'small')}<span>${user.name}</span>`:'<span class="unassigned-owner">ยังไม่ระบุ</span>'})
+  });
+}
+const scopedShowDetail=showDetail;
+showDetail=function(id){scopedShowDetail(id);renderScopedOwnerPhotos(id)};
+planningShowDetail=showDetail;
+const scopedRenderAll=renderAll;
+renderAll=function(){scopedRenderAll();installScopedOwnerSelectors();if(activeDetailProject)renderScopedOwnerPhotos(activeDetailProject)};
+renderAll();

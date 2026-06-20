@@ -133,6 +133,7 @@
 
   function openPlanningReliably(projectId, type = 'workstream', parentId = '') {
     openPlanning(projectId, type, parentId);
+    if (typeof populateOwnerSelect === 'function') populateOwnerSelect(document.querySelector('#planOwner'), projectId);
     updatePlanOrderDefault();
     setTimeout(() => document.querySelector('#planTitle')?.focus(), 0);
   }
@@ -149,7 +150,8 @@
     const record = {
       id: uid(type),
       title: document.querySelector('#planTitle').value.trim(),
-      owner: document.querySelector('#planOwner').value.trim(),
+      owner: document.querySelector('#planOwner').value || 'ยังไม่ระบุ',
+      ownerUserId: document.querySelector('#planOwner').selectedOptions?.[0]?.dataset.userId || '',
       start: document.querySelector('#planStart').value,
       due: document.querySelector('#planDue').value,
       followUp: document.querySelector('#planFollowUp').value,
@@ -290,6 +292,7 @@
       item.title = document.querySelector('#editTaskTitle').value.trim();
       item.note = document.querySelector('#editTaskNote').value.trim();
       item.owner = document.querySelector('#editTaskOwner').value;
+      item.ownerUserId = document.querySelector('#editTaskOwner').selectedOptions?.[0]?.dataset.userId || '';
       item.due = document.querySelector('#editTaskDue').value;
       item.followUp = document.querySelector('#editTaskFollow').value;
       item.progress = Math.max(0, Math.min(100, Number(document.querySelector('#editTaskProgress').value)));
@@ -383,7 +386,7 @@
       const projectId = document.querySelector('#standaloneProject').value;
       const file = document.querySelector('#standaloneFile').files[0];
       const attachment = file ? await window.LatiteamSupabase.uploadFile(file, projectId || 'general') : {};
-      record = {id:uid('event'),title:document.querySelector('#standaloneTitle').value.trim(),date:document.querySelector('#standaloneDate').value,time:document.querySelector('#standaloneTime').value,owner:document.querySelector('#standaloneOwner').value.trim(),type:projectId?document.querySelector('#standaloneType').value:'general',projectId,note:document.querySelector('#standaloneNote').value.trim(),link:document.querySelector('#standaloneLink').value.trim() || attachment.signedUrl || '',fileName:attachment.fileName || '',storagePath:attachment.storagePath || ''};
+      record = {id:uid('event'),title:document.querySelector('#standaloneTitle').value.trim(),date:document.querySelector('#standaloneDate').value,time:document.querySelector('#standaloneTime').value,owner:document.querySelector('#standaloneOwner').value||'ยังไม่ระบุ',ownerUserId:document.querySelector('#standaloneOwner').selectedOptions?.[0]?.dataset.userId||'',type:projectId?document.querySelector('#standaloneType').value:'general',projectId,note:document.querySelector('#standaloneNote').value.trim(),link:document.querySelector('#standaloneLink').value.trim() || attachment.signedUrl || '',fileName:attachment.fileName || '',storagePath:attachment.storagePath || ''};
       standaloneEvents.push(record);
       saveStandaloneEvents();
       await window.LatiteamSupabase.saveEvent(record);
