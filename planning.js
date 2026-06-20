@@ -1,4 +1,5 @@
-const planningToday='2026-06-19';
+const planningToday=localYmd(new Date());
+const planningMonthEnd=localYmd(new Date(new Date().getFullYear(),new Date().getMonth()+1,0));
 let agendaFilter='all';
 let activeDetailProject=null;
 var financeTransactions=[];
@@ -6,8 +7,8 @@ const uiFilters={
   projectStart:'',
   projectEnd:'',
   agendaSearch:'',
-  agendaStart:'2026-06-01',
-  agendaEnd:'2026-06-30',
+  agendaStart:planningToday.slice(0,7)+'-01',
+  agendaEnd:planningMonthEnd,
   agendaProject:'all',
   agendaOwner:'all',
   updateSearch:'',
@@ -321,7 +322,13 @@ function eventProjectId(e){return e.project?.id||e.projectId||''}
 function openEventPopup(eventId){const e=filteredCalendarEvents().find(x=>(x.id||`${x.type}-${x.date}-${x.title}`)===eventId);if(!e)return;const project=e.project||projects.find(p=>p.id===e.projectId);$('#eventPopupBody').innerHTML=`<div class="event-popup-body"><div><span class="eyebrow">${project?'PROJECT EVENT':'GENERAL EVENT'}</span><h2>${e.title}${project?'': '<span class="standalone-badge">ไม่คิด Progress</span>'}</h2></div><div class="permission-row"><b>วันที่ / เวลา</b><span>${dateTH(e.date)} ${e.time||''}</span></div><div class="permission-row"><b>โครงการ</b><span>${project?project.name:'งานกลาง ไม่ผูกโปรเจกต์'}</span></div><div class="permission-row"><b>ผู้ดูแล</b><span>${e.owner||'-'}</span></div><div class="permission-row"><b>รายละเอียด</b><span>${e.note||'-'}</span></div>${(e.link||e.fileName)?`<div class="attachment-row">${e.link?`<a href="${e.link}" target="_blank" rel="noopener">เปิดลิงก์แนบ</a>`:''}${e.fileName?`<span>ไฟล์: ${e.fileName}</span>`:''}</div>`:''}</div>`;$('#eventPopupModal').classList.add('open')}
 function closeEventPopup(){$('#eventPopupModal').classList.remove('open')}
 
-function renderProjectMiniCalendar(projectId){const root=$('#projectMiniCalendar');if(!root)return;const events=filteredCalendarEvents().filter(e=>eventProjectId(e)===projectId).slice(0,8);root.innerHTML=events.length?events.map(e=>`<div class="mini-cal-event ${e.type}" data-event-id="${e.id||`${e.type}-${e.date}-${e.title}`}"><b>${e.title}</b><small>${dateTH(e.date)} ${e.time||''} · ${e.owner||'-'}</small></div>`).join(''):'<div class="empty-state">ยังไม่มีนัดหรือ timeline ในช่วงที่เลือก</div>';root.querySelectorAll('[data-event-id]').forEach(x=>x.onclick=()=>openEventPopup(x.dataset.eventId))}
+function renderProjectMiniCalendar(projectId){
+  const root=$('#projectMiniCalendar');if(!root)return;
+  const start=calendarMonthStart(),base=new Date(start+'T00:00:00'),year=base.getFullYear(),month=base.getMonth(),firstDay=new Date(year,month,1),gridStart=new Date(firstDay);gridStart.setDate(firstDay.getDate()-firstDay.getDay());
+  const events=finalCalendarEvents().filter(event=>eventProjectId(event)===projectId),weekdays=['อา','จ','อ','พ','พฤ','ศ','ส'];
+  root.innerHTML=`<div class="mini-month-calendar"><div class="mini-month-title">${monthNameTH(start)}</div><div class="mini-month-weekdays">${weekdays.map(day=>`<span>${day}</span>`).join('')}</div><div class="mini-month-grid">${Array.from({length:42},(_,index)=>{const date=new Date(gridStart);date.setDate(gridStart.getDate()+index);const iso=localYmd(date),dayEvents=events.filter(event=>event.date===iso),shown=dayEvents.slice(0,2);return`<div class="mini-month-day ${date.getMonth()!==month?'is-muted':''} ${iso===planningToday?'is-today':''}"><span class="mini-day-number">${date.getDate()}</span><div class="mini-day-events">${shown.map(event=>`<button type="button" class="mini-day-event ${event.type}" title="${event.title}" data-event-id="${event.id||`${event.type}-${event.date}-${event.title}`}" style="--event-color:${calendarColor(event)}"><i></i><span>${event.time?event.time+' ':''}${event.title}</span></button>`).join('')}${dayEvents.length>shown.length?`<small>+${dayEvents.length-shown.length}</small>`:''}</div></div>`}).join('')}</div></div>`;
+  root.querySelectorAll('[data-event-id]').forEach(button=>button.onclick=()=>openEventPopup(button.dataset.eventId));
+}
 function renderExecutivePerformance(projectId){const p=projects.find(x=>x.id===projectId),root=$('#projectPerformance');if(!p||!root)return;const owners={};(p.workstreams||[]).forEach(w=>{owners[w.owner]=owners[w.owner]||[];owners[w.owner].push(w.progress);(w.items||[]).forEach(i=>{owners[i.owner]=owners[i.owner]||[];owners[i.owner].push(i.progress)})});root.innerHTML=Object.entries(owners).map(([owner,vals])=>{const avg=Math.round(vals.reduce((a,b)=>a+b,0)/vals.length);return`<div class="performance-row"><div><b>${owner}</b><small>${vals.length} งาน</small></div><div class="mini-progress"><span style="width:${avg}%;background:${p.color}"></span></div><b>${avg}%</b></div>`}).join('')||'<div class="empty-state">ไม่มีข้อมูล performance</div>'}
 
 const oldPlanningShowDetail=planningShowDetail;
